@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // no special config needed - port set in package.json script
 };
 
 export default nextConfig;

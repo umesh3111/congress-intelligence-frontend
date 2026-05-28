@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Congress IQ — Congress Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..60,300;12..60,400;12..60,600;12..60,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <div class="logo"><span>IQ</span></div>
+        <div>
+          <h1>Congress IQ</h1>
+          <p>ORCHESTRATE AI</p>
+        </div>
+      </div>
+
+      <div class="nav-client-block">
+        <div class="nav-client-dot"></div>
+        <div>
+          <div class="nav-client-name">GSK Workspace</div>
+          <div class="nav-client-sub">MedCom Agency</div>
+        </div>
+      </div>
+
+      <div class="nav-label">Workspace</div>
+      <a class="nav-item" href="#/dashboard" data-nav="dashboard">
+        <span class="nav-icon">⊞</span>Agency Dashboard
+      </a>
+      <a class="nav-item" href="#/clients/gsk" data-nav="client">
+        <span class="nav-icon">◉</span>GSK Workspace
+      </a>
+      <a class="nav-item" href="#/clients/gsk/congresses/ddw-2026" data-nav="congress">
+        <span class="nav-icon">◈</span>DDW 2026
+      </a>
+      <a class="nav-item" href="#/clients/gsk/congresses/ddw-2026/feed" data-nav="feed">
+        <span class="nav-icon">☰</span>Intel Feed <span class="nav-badge">312</span>
+      </a>
+      <a class="nav-item" href="#/clients/gsk/kols" data-nav="kols">
+        <span class="nav-icon">⊛</span>KOL Directory
+      </a>
+
+      <div class="nav-label">Configuration</div>
+      <a class="nav-item" href="#/clients/gsk/settings/prioritization" data-nav="settings">
+        <span class="nav-icon">⚙</span>Prioritization
+      </a>
+      <a class="nav-item" href="#/profile" data-nav="profile">
+        <span class="nav-icon">◎</span>My Profile
+      </a>
+
+      <div class="side-foot">
+        <div class="who">
+          <div class="av">SP</div>
+          <div>
+            <b>Sarah Phillips</b>
+            <small>MedCom Agency · Director</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="tb-left">
+          <div class="tb-congress"><span class="dot"></span> DDW 2026 <span class="chev">▾</span></div>
+        </div>
+        <div class="tb-search">
+          <input id="global-search" placeholder="Ask in plain language — abstracts, KOLs, drugs, topics…">
+          <span class="k">⌘K</span>
+        </div>
+        <div class="tb-actions">
+          <div class="demo-badge">DEMO DATA</div>
+          <div class="tb-bell" onclick="showToast('3 new abstracts scored since yesterday')">🔔<span class="tb-bell-badge">3</span></div>
+          <div class="tb-user" onclick="location.hash='#/profile'">
+            <div class="av sm">SP</div>
+            <span class="tb-user-name">Sarah P.</span>
+          </div>
+        </div>
+      </header>
+      <section id="page" class="wrap"></section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -275,6 +275,92 @@ const DATA = {
   DATA.abstracts = deduped;
 })();
 
+// Demo seed client for setup-state walkthrough (v2 spec)
+if (!DATA.clients.some(c => c.id === 'abbvie')) {
+  DATA.clients.push({
+    id: 'abbvie', name: 'AbbVie', abbr: 'ABV', congresses: 0, kols: 0, insights: 0, reports: 0, prog: 8
+  });
+}
+
+// ==========================================================
+// WORKSPACE STATE (v2 setup mechanics)
+// ==========================================================
+const DEFAULT_SETUP = {
+  priorities: [],
+  tas: [],
+  focuses: [],
+  pipeline: [],
+  competitorCompanies: [],
+  competitorDrugs: [],
+  priorityKols: [],
+  keywords: []
+};
+let APP_STATE = {
+  activeClientId: 'gsk',
+  activeCongressId: 'ddw-2026',
+  openDrawer: null,
+  activeNavKey: 'dashboard'
+};
+
+function setupKey(clientId) { return `client-${clientId}-setup`; }
+function readyBannerKey(clientId) { return `client-${clientId}-ready-shown`; }
+function defaultWorkspaceKey() { return 'user-default-workspace'; }
+
+function getClient(clientId) {
+  return DATA.clients.find(c => c.id === clientId) || DATA.clients[0];
+}
+
+function slugify(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function getSetup(clientId) {
+  const raw = localStorage.getItem(setupKey(clientId));
+  if (raw) {
+    try { return { ...DEFAULT_SETUP, ...JSON.parse(raw) }; } catch (e) {}
+  }
+  const client = getClient(clientId);
+  if (clientId === 'gsk' || (client && client.tas && client.tas.length > 0)) {
+    return {
+      ...DEFAULT_SETUP,
+      priorities: [...DATA.strategicPriorities.map(p => ({ text: p.text, level: p.level }))],
+      tas: [...(client?.tas || ['Gastroenterology'])],
+      focuses: ['IBD', 'NASH', 'Microbiome', 'Fibrosis', 'IL-23 Pathway'],
+      pipeline: [{ name: 'semaglutide', status: 'marketed', indication: 'MASH' }],
+      competitorCompanies: ['AbbVie', 'Janssen', 'Merck'],
+      competitorDrugs: ['risankizumab'],
+      priorityKols: ['sarah-chen', 'subrata-ghosh', 'bram-vermeire'],
+      keywords: ['IL-23 inhibitors', 'fibrosis regression', 'real world evidence']
+    };
+  }
+  return { ...DEFAULT_SETUP };
+}
+
+function saveSetup(clientId, setup) {
+  localStorage.setItem(setupKey(clientId), JSON.stringify(setup));
+}
+
+function isRequiredSetupComplete(clientId) {
+  const setup = getSetup(clientId);
+  return setup.priorities.length > 0 && setup.tas.length > 0;
+}
+
+function checklistStatus(clientId) {
+  const setup = getSetup(clientId);
+  return {
+    priorities: setup.priorities.length > 0,
+    therapeuticAreas: setup.tas.length > 0,
+    pipeline: setup.pipeline.length > 0,
+    competitors: setup.competitorCompanies.length > 0 || setup.competitorDrugs.length > 0,
+    kols: setup.priorityKols.length > 0,
+    keywords: setup.keywords.length > 0,
+    weights: true
+  };
+}
+
 // ==========================================================
 // UTILITIES
 // ==========================================================
@@ -368,22 +454,53 @@ function route() {
   const h = location.hash || '#/dashboard';
   const page = document.getElementById('page');
   page.scrollTop = 0;
+  const hashOnly = h.split('?')[0];
+  const qParams = new URLSearchParams((h.split('?')[1] || '').split('#')[0]);
+  const clientMatch = hashOnly.match(/^#\/clients\/([^/]+)$/);
+  const congressMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)$/);
+  const feedMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/feed$/);
+  const askMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/ask$/);
+  const meetingMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/meeting-list$/);
+  const topicMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/topics\/([^/]+)$/);
+  const kolsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/kols$/);
+  const settingsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/settings\/prioritization$/);
+  const newCongressMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/new$/);
 
   if (h === '#/dashboard' || h === '#/' || h === '') {
     renderDashboard(); highlightNav('dashboard');
-  } else if (h === '#/clients/gsk') {
-    renderClientWorkspace(); highlightNav('client');
-  } else if (h === '#/clients/gsk/congresses/ddw-2026') {
+  } else if (clientMatch) {
+    APP_STATE.activeClientId = clientMatch[1];
+    renderClientWorkspace(clientMatch[1], qParams.get('drawer')); highlightNav('client');
+  } else if (congressMatch) {
+    APP_STATE.activeClientId = congressMatch[1];
+    APP_STATE.activeCongressId = congressMatch[2];
     renderCongressDashboard(); highlightNav('congress');
-  } else if (h === '#/clients/gsk/congresses/ddw-2026/feed') {
+  } else if (feedMatch) {
+    APP_STATE.activeClientId = feedMatch[1];
+    APP_STATE.activeCongressId = feedMatch[2];
     renderIntelFeed(); highlightNav('feed');
-  } else if (h === '#/clients/gsk/kols') {
+  } else if (askMatch) {
+    APP_STATE.activeClientId = askMatch[1];
+    APP_STATE.activeCongressId = askMatch[2];
+    renderAskAnything(qParams.get('q') || 'Which KOLs discussed fibrosis regression as a regulatory endpoint?'); highlightNav('ask');
+  } else if (meetingMatch) {
+    APP_STATE.activeClientId = meetingMatch[1];
+    APP_STATE.activeCongressId = meetingMatch[2];
+    renderMeetingList(); highlightNav('meeting');
+  } else if (topicMatch) {
+    APP_STATE.activeClientId = topicMatch[1];
+    APP_STATE.activeCongressId = topicMatch[2];
+    renderTopicLandscape(topicMatch[3]); highlightNav('topic');
+  } else if (kolsMatch) {
+    APP_STATE.activeClientId = kolsMatch[1];
     renderKolDirectory(); highlightNav('kols');
-  } else if (h === '#/clients/gsk/settings/prioritization') {
+  } else if (settingsMatch) {
+    APP_STATE.activeClientId = settingsMatch[1];
     renderPrioritizationSettings(); highlightNav('settings');
   } else if (h === '#/profile') {
     renderProfile(); highlightNav('profile');
-  } else if (h === '#/clients/gsk/congresses/new') {
+  } else if (newCongressMatch) {
+    APP_STATE.activeClientId = newCongressMatch[1];
     renderCongressCreation(); highlightNav('congress');
   } else if (h.startsWith('#/abstracts/')) {
     const id = h.replace('#/abstracts/', '');
@@ -394,12 +511,196 @@ function route() {
   } else {
     renderDashboard(); highlightNav('dashboard');
   }
+  syncShellContext();
 }
 
 function highlightNav(key) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('act'));
-  const nav = document.querySelector(`[data-nav="${key}"]`);
-  if (nav) nav.classList.add('act');
+  APP_STATE.activeNavKey = key;
+  renderSidebar();
+}
+
+function syncShellContext() {
+  const client = getClient(APP_STATE.activeClientId);
+  const cName = client ? client.name : 'Workspace';
+  const congress = DATA.congresses.find(c => c.id === APP_STATE.activeCongressId && c.client === APP_STATE.activeClientId)
+    || DATA.congresses.find(c => c.client === APP_STATE.activeClientId)
+    || DATA.congresses[0];
+  const cEl = document.querySelector('.nav-client-name');
+  if (cEl) cEl.textContent = `${cName} Workspace`;
+
+  const topbarCongress = document.querySelector('.tb-congress');
+  if (topbarCongress) {
+    topbarCongress.innerHTML = `<span class="dot"></span> ${congress.acronym} 2026 <span class="chev">▾</span>`;
+    topbarCongress.onclick = (e) => {
+      e.stopPropagation();
+      toggleWorkspaceSwitcher();
+    };
+    topbarCongress.title = `Switch to ${cName} workspace`;
+  }
+
+  ensureTopbarCreateMenu();
+  localStorage.setItem(defaultWorkspaceKey(), APP_STATE.activeClientId);
+  const askInput = document.getElementById('global-search');
+  if (askInput && !askInput.dataset.boundAsk) {
+    askInput.dataset.boundAsk = '1';
+    askInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = encodeURIComponent(askInput.value.trim() || 'Which KOLs discussed fibrosis regression as a regulatory endpoint?');
+        location.hash = `#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/ask?q=${q}`;
+      }
+    });
+  }
+}
+
+function renderSidebar() {
+  const side = document.querySelector('.side');
+  if (!side) return;
+  const client = getClient(APP_STATE.activeClientId);
+  const congress = DATA.congresses.find(c => c.id === APP_STATE.activeCongressId && c.client === APP_STATE.activeClientId)
+    || DATA.congresses.find(c => c.client === APP_STATE.activeClientId)
+    || DATA.congresses[0];
+  const configured = isRequiredSetupComplete(client.id);
+  const disabledClass = configured ? '' : ' nav-item-dis';
+  const disabledClick = configured ? '' : `onclick="event.preventDefault();showToast('Complete required setup items to unlock this module')"`; 
+  const isActiveClientRoute = ['client', 'congress', 'feed', 'kols', 'settings', 'ask', 'meeting', 'topic'].includes(APP_STATE.activeNavKey);
+
+  const clientItems = DATA.clients.map(c => {
+    const cConfigured = isRequiredSetupComplete(c.id);
+    const active = APP_STATE.activeClientId === c.id && isActiveClientRoute ? 'act' : '';
+    return `<a class="nav-item client-ws-item ${active}" href="#/clients/${c.id}">
+      <span class="nav-icon">◉</span>${c.name}
+      <span class="chip ${cConfigured ? 'own' : 'soft'} xs" style="margin-left:auto">${cConfigured ? 'Active' : 'Setup'}</span>
+    </a>`;
+  }).join('');
+
+  side.innerHTML = `
+    <div class="brand">
+      <div class="logo"><span>IQ</span></div>
+      <div><h1>Congress IQ</h1><p>ORCHESTRATE AI</p></div>
+    </div>
+
+    <div class="nav-client-block">
+      <div class="nav-client-dot"></div>
+      <div>
+        <div class="nav-client-name">${client.name} Workspace</div>
+        <div class="nav-client-sub">MedCom Agency</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Agency</div>
+    <a class="nav-item agency-item ${APP_STATE.activeNavKey === 'dashboard' ? 'act' : ''}" href="#/dashboard">
+      <span class="nav-icon">⌂</span>Home
+    </a>
+    <a class="nav-item agency-item" href="#" onclick="showToast('My tasks view coming soon');return false;">
+      <span class="nav-icon">☑</span>My Tasks <span class="nav-badge">12</span>
+    </a>
+    <a class="nav-item agency-item" href="#" onclick="showToast('Notifications view coming soon');return false;">
+      <span class="nav-icon">🔔</span>Notifications <span class="nav-badge">5</span>
+    </a>
+
+    <div class="nav-label">Client Workspaces</div>
+    ${clientItems}
+    <a class="nav-item client-ws-item" href="#" onclick="openCreateClientModal(); return false;">
+      <span class="nav-icon">＋</span>Add Client Workspace
+    </a>
+
+    <div class="nav-label">Client Modules</div>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'client') ? 'act' : ''}" href="#/clients/${client.id}">
+      <span class="nav-icon">▣</span>${client.name} Overview
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'congress') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}" ${disabledClick}>
+      <span class="nav-icon">◈</span>Congress Dashboard
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'feed') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/feed" ${disabledClick}>
+      <span class="nav-icon">☰</span>Intel Feed <span class="nav-badge">312</span>
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'ask') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/ask" ${disabledClick}>
+      <span class="nav-icon">✦</span>Ask Anything
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'meeting') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/meeting-list" ${disabledClick}>
+      <span class="nav-icon">☷</span>Meeting List
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'topic') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/topics/IL-23" ${disabledClick}>
+      <span class="nav-icon">◎</span>Topic Brief
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'kols') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/kols" ${disabledClick}>
+      <span class="nav-icon">⊛</span>KOL Directory
+    </a>
+
+    <div class="nav-label">Configuration</div>
+    <a class="nav-item config-item ${(APP_STATE.activeNavKey === 'settings') ? 'act' : ''}" href="#/clients/${client.id}/settings/prioritization">
+      <span class="nav-icon">⚙</span>Priority Settings
+    </a>
+    <a class="nav-item config-item ${(APP_STATE.activeNavKey === 'profile') ? 'act' : ''}" href="#/profile">
+      <span class="nav-icon">◎</span>My Profile
+    </a>
+
+    <div class="side-foot">
+      <div class="who">
+        <div class="av">SP</div>
+        <div><b>Sarah Phillips</b><small>MedCom Agency · Director</small></div>
+      </div>
+    </div>
+  `;
+}
+
+function ensureTopbarCreateMenu() {
+  const host = document.querySelector('.tb-actions');
+  if (!host || document.getElementById('top-create-wrap')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'top-create-wrap';
+  wrap.className = 'top-create-wrap';
+  wrap.innerHTML = `<button class="btn-secondary sm" onclick="toggleCreateMenu(event)">＋ Create New ▾</button>
+    <div class="top-create-menu" id="top-create-menu">
+      <button class="menu-row" onclick="openCreateClientModal()">Create New Client Workspace</button>
+      <button class="menu-row" onclick="location.hash='#/clients/${APP_STATE.activeClientId}/congresses/new'">Create New Congress</button>
+    </div>`;
+  host.prepend(wrap);
+  document.addEventListener('click', () => {
+    document.getElementById('top-create-menu')?.classList.remove('show');
+    document.getElementById('ws-switcher-menu')?.classList.remove('show');
+  });
+}
+
+function toggleCreateMenu(event) {
+  event.stopPropagation();
+  const menu = document.getElementById('top-create-menu');
+  if (!menu) return;
+  menu.classList.toggle('show');
+}
+
+function toggleWorkspaceSwitcher() {
+  let menu = document.getElementById('ws-switcher-menu');
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'ws-switcher-menu';
+    menu.className = 'ws-switcher-menu';
+    document.body.appendChild(menu);
+  }
+  const activeClient = getClient(APP_STATE.activeClientId);
+  const items = DATA.clients.map(c =>
+    `<button class="menu-row" onclick="switchWorkspace('${c.id}')">
+      <span class="ctag xs">${c.abbr}</span> ${c.name} ${isRequiredSetupComplete(c.id) ? '' : '<span class="chip soft xs">Setting up</span>'}
+    </button>`).join('');
+  menu.innerHTML = `<div class="ws-sw-hd">Active workspace</div>
+    <div class="ws-sw-current"><span class="ctag xs">${activeClient.abbr}</span> ${activeClient.name}</div>
+    <div class="ws-sw-divider"></div>
+    <div class="ws-sw-grp">Switch to</div>${items}`;
+  const trigger = document.querySelector('.tb-congress');
+  if (trigger) {
+    const r = trigger.getBoundingClientRect();
+    menu.style.top = `${r.bottom + 8}px`;
+    menu.style.left = `${r.left}px`;
+  }
+  menu.classList.toggle('show');
+}
+
+function switchWorkspace(clientId) {
+  APP_STATE.activeClientId = clientId;
+  const firstCongress = DATA.congresses.find(c => c.client === clientId) || DATA.congresses[0];
+  APP_STATE.activeCongressId = firstCongress.id;
+  document.getElementById('ws-switcher-menu')?.classList.remove('show');
+  location.hash = `#/clients/${clientId}`;
 }
 
 function setPage(html) {
@@ -432,7 +733,12 @@ function renderDashboard() {
       <b>${c.name}</b><small>${c.congresses} Congresses</small>
       <div class="prog"><i style="width:${c.prog}%"></i></div>
     </a>`
-  ).join('');
+  ).join('') + `
+    <a class="client-tile" href="#" onclick="openCreateClientModal(); return false;">
+      <div class="ctag" style="background:var(--bg);color:var(--teal);border:1px dashed var(--teal)">＋</div>
+      <b>Add Client</b><small>Create client workspace</small>
+      <div class="prog"><i style="width:12%"></i></div>
+    </a>`;
 
   setPage(`
     <div class="ph">
@@ -492,13 +798,16 @@ function renderDashboard() {
 
     <div class="sec-title">Quick Actions <span class="ln"></span></div>
     <div class="qa-grid">
-      <a class="qa" href="#/clients/gsk/congresses/new">
+      <a class="qa" href="#" onclick="openCreateClientModal(); return false;">
+        <div class="qi">⊕</div><b>Create New Client Workspace</b><small>Set up a new pharma client</small>
+      </a>
+      <a class="qa" href="#/clients/${APP_STATE.activeClientId}/congresses/new">
         <div class="qi">＋</div><b>Create New Congress</b><small>Start a new congress workspace</small>
       </a>
       <a class="qa" onclick="showToast('Upload feature coming soon — use the Congress workspace to ingest documents'); return false" href="#">
         <div class="qi">⬆</div><b>Upload Documents</b><small>PDFs, slides, screenshots</small>
       </a>
-      <a class="qa" href="#/clients/gsk/settings/prioritization">
+      <a class="qa" href="#/clients/${APP_STATE.activeClientId}/settings/prioritization">
         <div class="qi">★</div><b>View Prioritization</b><small>AI-ranked opportunities</small>
       </a>
       <a class="qa" onclick="showToast('✓ Capture feature coming soon — use the KOL Dossier to add field notes'); return false" href="#">
@@ -511,41 +820,88 @@ function renderDashboard() {
 // ==========================================================
 // PAGE 2: CLIENT WORKSPACE
 // ==========================================================
-function renderClientWorkspace() {
-  const gskCongresses = DATA.congresses.filter(c => c.client === 'gsk' && c.inDays > 0);
-  const congRows = gskCongresses.slice(0,5).map(c =>
-    `<a class="cong-mini" href="#/clients/gsk/congresses/${c.id}">
+function renderClientWorkspace(clientId = APP_STATE.activeClientId, drawerId = null) {
+  APP_STATE.activeClientId = clientId;
+  const client = getClient(clientId);
+  const setup = getSetup(clientId);
+  const status = checklistStatus(clientId);
+  const requiredDone = Number(status.priorities) + Number(status.therapeuticAreas);
+  const doneCount = Object.values(status).filter(Boolean).length;
+  const isConfigured = isRequiredSetupComplete(clientId);
+
+  const congresses = DATA.congresses.filter(c => c.client === clientId && c.inDays > 0);
+  const firstCongress = congresses[0] || DATA.congresses.find(c => c.client === 'gsk');
+  if (firstCongress) APP_STATE.activeCongressId = firstCongress.id;
+  const congressPath = `#/clients/${clientId}/congresses/${APP_STATE.activeCongressId}`;
+
+  const setupTag = isConfigured ? `<span class="setup-tag" onclick="showToast('Setup checklist available via drawer actions')">Setup complete · ${doneCount}/7 ✓</span>` : '';
+  const readyShown = localStorage.getItem(readyBannerKey(clientId)) === '1';
+  const showReady = isConfigured && !readyShown;
+  if (showReady) localStorage.setItem(readyBannerKey(clientId), '1');
+
+  const setupPanel = `
+    <div class="setup-panel">
+      <div class="setup-hd">
+        <div><h3>Set up your workspace</h3><p class="muted">Configure your strategic context once. This lens drives abstract scoring, KOL surfacing, and competitive flagging.</p></div>
+        <div class="setup-progress">
+          <div class="sp-num"><b>${doneCount}</b> <span>/ 7</span></div>
+          <div class="bar"><i style="width:${(doneCount/7)*100}%"></i></div>
+          <small><b>Required: ${requiredDone} / 2</b> · 5 recommended</small>
+        </div>
+      </div>
+      <ol class="checklist">
+        ${setupChecklistItem('priorities','Strategic Priorities','3–5 high-level priorities that shape what matters for this client.',true,status.priorities)}
+        ${setupChecklistItem('therapeutic-areas','Therapeutic Areas & Focus Areas','The TAs and sub-topics the client cares about.',true,status.therapeuticAreas)}
+        ${setupChecklistItem('pipeline','Pipeline Assets','Pipeline and marketed drugs — enables own-company flagging on abstracts.',false,status.pipeline)}
+        ${setupChecklistItem('competitors','Competitors','Competitor companies and drugs — enables competitive flagging.',false,status.competitors)}
+        ${setupChecklistItem('kols','Priority KOLs','10–20 priority KOLs for meeting prep. Can be added anytime.',false,status.kols)}
+        ${setupChecklistItem('keywords','Strategic Keywords & Topics','Search vocabulary that boosts matching abstracts in the Intel Feed.',false,status.keywords)}
+        <li class="check-item ${status.weights ? 'done' : 'pending'}">
+          <span class="ic">${status.weights ? '✓' : '○'}</span>
+          <div class="ci-body"><b>Prioritization Weights</b><small>Defaults provided — review if you want to tune scoring.</small></div>
+          <span class="chip soft xs">Defaults set</span>
+          <a class="btn-secondary sm" href="#/clients/${clientId}/settings/prioritization">Review</a>
+        </li>
+      </ol>
+    </div>
+    <div class="overview-preview muted-preview">
+      <div class="metrics"><div class="metric"><div class="lab">Active Congresses</div><div class="num">—</div></div><div class="metric"><div class="lab">KOLs Tracked</div><div class="num">—</div></div><div class="metric"><div class="lab">Insights Captured</div><div class="num">—</div></div></div>
+      <div class="preview-note">Available once setup is complete.</div>
+    </div>
+  `;
+
+  const congRows = congresses.slice(0,5).map(c =>
+    `<a class="cong-mini" href="#/clients/${clientId}/congresses/${c.id}">
       <div class="cmark sm ${cmarkClass(c.acronym)}">${c.acronym}</div>
       <div><b>${c.acronym} ${c.dates.split(',')[0]}</b><div class="meta">${c.dates} · ${c.city}</div></div>
       <span class="when">In ${c.inDays}d</span>
     </a>`
-  ).join('');
+  ).join('') || `<div class="empty" style="padding:22px"><h3>No congresses yet</h3><p>Add your first congress when setup is complete.</p></div>`;
 
-  const priorities = DATA.strategicPriorities.map(p =>
-    `<div class="pri pri-${p.level}"><div class="pri-n">${p.rank}</div>
-      <b>${p.text}</b>
-      <span class="chip ${p.level === 'high' ? 'comp xs' : 'soft xs'}">${p.level.toUpperCase()}</span>
-    </div>`
+  const priorities = (setup.priorities.length ? setup.priorities : DATA.strategicPriorities.map(p => ({ text:p.text, level:p.level }))).map((p, idx) =>
+    `<div class="pri pri-${p.level || 'medium'}"><div class="pri-n">${idx+1}</div><b>${p.text}</b><span class="chip ${(p.level || 'medium') === 'high' ? 'comp xs' : 'soft xs'}">${(p.level || 'medium').toUpperCase()}</span></div>`
   ).join('');
 
   setPage(`
-    <div class="crumb">Client Workspaces › <b>GSK</b></div>
+    <div class="crumb">Client Workspaces › <b>${client.name}</b> ${setupTag}</div>
     <div class="client-hd">
-      <div class="ctag-lg">GSK</div>
+      <div class="ctag-lg">${client.abbr}</div>
       <div>
-        <h2>GSK <span class="chip own">Active Client</span></h2>
-        <p>GlaxoSmithKline · Therapeutic areas: Gastroenterology, Respiratory, Oncology, Immunology</p>
+        <h2>${client.name} <span class="chip ${isConfigured ? 'own' : 'soft'}">${isConfigured ? 'Active Client' : 'Setting up'}</span></h2>
+        <p>${isConfigured ? `${client.name} workspace configured for strategic congress planning.` : 'Configure your strategic context to start tracking congresses.'}</p>
       </div>
       <div class="hd-actions">
         <button class="btn-secondary" onclick="showToast('Client Settings panel coming soon')">⚙ Client Settings</button>
-        <a class="btn-primary" href="#/clients/gsk/congresses/new">＋ New Congress</a>
+        ${isConfigured ? `<a class="btn-primary" href="#/clients/${clientId}/congresses/new">＋ New Congress</a>` : `<button class="btn-primary pulse-cta" disabled title="Configure Strategic Priorities and at least one Therapeutic Area to add a congress.">＋ New Congress</button>`}
       </div>
     </div>
 
+    ${showReady ? `<div class="ready-banner"><div class="rb-ic">✨</div><div class="rb-body"><b>You're ready.</b><p>Add your first congress to see the lens in action.</p></div><a class="btn-primary" href="#/clients/${clientId}/congresses/new">＋ New Congress</a></div>` : ''}
+
     <nav class="tabs">
       <a class="tab act">Overview</a>
-      <a class="tab" href="#/clients/gsk/congresses/ddw-2026">Congresses</a>
-      <a class="tab" href="#/clients/gsk/kols">KOLs</a>
+      <a class="tab" href="${congressPath}">Congresses</a>
+      <a class="tab" href="#/clients/${clientId}/kols">KOLs</a>
       <a class="tab" onclick="showTabStub(this,'Insights')">Insights</a>
       <a class="tab" onclick="showTabStub(this,'Reports')">Reports</a>
       <a class="tab" onclick="showTabStub(this,'Documents')">Documents</a>
@@ -553,72 +909,50 @@ function renderClientWorkspace() {
       <a class="tab" onclick="showTabStub(this,'Team')">Team</a>
     </nav>
 
-    <div class="metrics stagger">
-      <div class="metric">${metricIcon('📅','teal')}<div class="lab">Active Congresses</div><div class="num">6</div><div class="sub">Across 2026</div></div>
-      <div class="metric">${metricIcon('👥','ink')}<div class="lab">KOLs Tracked</div><div class="num">245</div><div class="sub">All TAs</div></div>
-      <div class="metric">${metricIcon('⚡','amber')}<div class="lab">Insights Captured</div><div class="num">1,368</div><div class="sub">This year</div></div>
-      <div class="metric">${metricIcon('📊','violet')}<div class="lab">Reports Generated</div><div class="num">28</div><div class="sub">This year</div></div>
-      <div class="metric">${metricIcon('⚙','green')}<div class="lab">Strategic Priorities</div><div class="num">4</div><div class="sub">Configured</div></div>
-    </div>
-
-    <div class="cols-3">
-      <div class="panel">
-        <div class="panel-h">Upcoming Congresses <a class="more" href="#/clients/gsk/congresses/ddw-2026">VIEW ALL ›</a></div>
-        <div class="panel-b" style="padding:4px 16px">${congRows}</div>
+    ${isConfigured ? `
+      <div class="metrics stagger">
+        <div class="metric">${metricIcon('📅','teal')}<div class="lab">Active Congresses</div><div class="num">${client.congresses || 0}</div><div class="sub">Across 2026</div></div>
+        <div class="metric">${metricIcon('👥','ink')}<div class="lab">KOLs Tracked</div><div class="num">${client.kols || 0}</div><div class="sub">All TAs</div></div>
+        <div class="metric">${metricIcon('⚡','amber')}<div class="lab">Insights Captured</div><div class="num">${(client.insights || 0).toLocaleString()}</div><div class="sub">This year</div></div>
+        <div class="metric">${metricIcon('📊','violet')}<div class="lab">Reports Generated</div><div class="num">${client.reports || 0}</div><div class="sub">This year</div></div>
+        <div class="metric">${metricIcon('⚙','green')}<div class="lab">Strategic Priorities</div><div class="num">${setup.priorities.length || 4}</div><div class="sub">Configured</div></div>
       </div>
-      <div class="panel">
-        <div class="panel-h">Top Therapeutic Areas</div>
-        <div class="panel-b" style="display:flex;flex-direction:column;align-items:center">
-          <canvas id="ta-donut" width="180" height="180"></canvas>
-          <div class="legend">
-            <div><span class="d" style="background:#0D9488"></span>Gastroenterology <b>38%</b></div>
-            <div><span class="d" style="background:#6D5BD0"></span>Respiratory <b>27%</b></div>
-            <div><span class="d" style="background:#B45309"></span>Oncology <b>18%</b></div>
-            <div><span class="d" style="background:#48607A"></span>Immunology <b>12%</b></div>
-            <div><span class="d" style="background:#AEBECD"></span>Other <b>5%</b></div>
-          </div>
-        </div>
+      <div class="cols-3">
+        <div class="panel"><div class="panel-h">Upcoming Congresses <a class="more" href="${congressPath}">VIEW ALL ›</a></div><div class="panel-b" style="padding:4px 16px">${congRows}</div></div>
+        <div class="panel"><div class="panel-h">Top Therapeutic Areas</div><div class="panel-b" style="display:flex;flex-direction:column;align-items:center"><canvas id="ta-donut" width="180" height="180"></canvas><div class="legend"><div><span class="d" style="background:#0D9488"></span>Gastroenterology <b>38%</b></div><div><span class="d" style="background:#6D5BD0"></span>Respiratory <b>27%</b></div><div><span class="d" style="background:#B45309"></span>Oncology <b>18%</b></div><div><span class="d" style="background:#48607A"></span>Immunology <b>12%</b></div><div><span class="d" style="background:#AEBECD"></span>Other <b>5%</b></div></div></div></div>
+        <div class="panel"><div class="panel-h">Recent Activity</div><div class="panel-b"><div class="tl"><div class="tl-i"><span class="dt">2H AGO</span><b>New congress setup progress updated</b></div><div class="tl-i"><span class="dt">5H AGO</span><b>Strategic context saved</b></div><div class="tl-i"><span class="dt">1D AGO</span><b>Prioritization settings updated</b></div></div></div></div>
       </div>
-      <div class="panel">
-        <div class="panel-h">Recent Activity</div>
-        <div class="panel-b">
-          <div class="tl">
-            <div class="tl-i"><span class="dt">2H AGO</span><b>New congress: DDW 2026 ingested</b><p>4,789 abstracts processed</p></div>
-            <div class="tl-i"><span class="dt">5H AGO</span><b>Dr. Walter Reinisch added to KOL list</b></div>
-            <div class="tl-i"><span class="dt">1D AGO</span><b>11 insights from ASCO 2024</b></div>
-            <div class="tl-i"><span class="dt">3D AGO</span><b>Prioritization settings updated</b></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sec-title">Strategic Priorities <a class="more" href="#/clients/gsk/settings/prioritization">MANAGE PRIORITIES ›</a><span class="ln"></span></div>
-    <div class="priorities-grid">${priorities}</div>
-
-    <div class="sec-title">Key Documents <a class="more" onclick="showToast('Document library coming soon')">VIEW ALL ›</a><span class="ln"></span></div>
-    <div class="docs">
-      <div class="doc"><div class="dic pdf">PDF</div><div><b>GSK Clinical Pipeline Overview</b><small>Updated Apr 25, 2026</small></div></div>
-      <div class="doc"><div class="dic ppt">PPTX</div><div><b>GSK Therapeutic Area Strategy 2026</b><small>Updated Apr 20, 2026</small></div></div>
-      <div class="doc"><div class="dic xls">XLSX</div><div><b>GSK Competitor Landscape</b><small>Updated Apr 18, 2026</small></div></div>
-    </div>
+      <div class="sec-title">Strategic Priorities <a class="more" onclick="openDrawer('${clientId}','priorities')">MANAGE PRIORITIES ›</a><span class="ln"></span></div>
+      <div class="priorities-grid">${priorities}</div>
+      <div class="sec-title">Key Documents <a class="more" onclick="showToast('Document library coming soon')">VIEW ALL ›</a><span class="ln"></span></div>
+      <div class="docs"><div class="doc"><div class="dic pdf">PDF</div><div><b>${client.name} Clinical Pipeline Overview</b><small>Updated Apr 25, 2026</small></div></div><div class="doc"><div class="dic ppt">PPTX</div><div><b>${client.name} Therapeutic Area Strategy 2026</b><small>Updated Apr 20, 2026</small></div></div><div class="doc"><div class="dic xls">XLSX</div><div><b>${client.name} Competitor Landscape</b><small>Updated Apr 18, 2026</small></div></div></div>
+    ` : setupPanel}
   `);
 
-  // Chart.js TA donut
-  requestAnimationFrame(() => {
-    const canvas = document.getElementById('ta-donut');
-    if (canvas && window.Chart) {
-      chartInstances['ta-donut'] = new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-          labels: ['Gastroenterology','Respiratory','Oncology','Immunology','Other'],
-          datasets: [{ data: [38,27,18,12,5],
-            backgroundColor: ['#0D9488','#6D5BD0','#B45309','#48607A','#AEBECD'],
-            borderWidth: 2, borderColor: '#fff' }]
-        },
-        options: { plugins: { legend: { display: false } }, cutout: '70%', animation: { duration: 600 } }
-      });
-    }
-  });
+  if (isConfigured) {
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById('ta-donut');
+      if (canvas && window.Chart) {
+        chartInstances['ta-donut'] = new Chart(canvas, {
+          type: 'doughnut',
+          data: { labels: ['Gastroenterology','Respiratory','Oncology','Immunology','Other'], datasets: [{ data: [38,27,18,12,5], backgroundColor: ['#0D9488','#6D5BD0','#B45309','#48607A','#AEBECD'], borderWidth: 2, borderColor: '#fff' }] },
+          options: { plugins: { legend: { display: false } }, cutout: '70%', animation: { duration: 600 } }
+        });
+      }
+    });
+  }
+  if (drawerId) openDrawer(clientId, drawerId);
+}
+
+function setupChecklistItem(id, title, description, required, done) {
+  const chip = required ? '<span class="chip comp xs">Required</span>' : '<span class="chip soft xs">Recommended</span>';
+  return `<li class="check-item ${done ? 'done' : 'pending'} ${required ? 'required' : 'recommended'}">
+    <span class="ic">${done ? '✓' : '○'}</span>
+    <div class="ci-body"><b>${title}</b><small>${description}</small></div>
+    ${chip}
+    <button class="${required ? 'btn-primary' : 'btn-secondary'} sm" onclick="openDrawer('${APP_STATE.activeClientId}','${id}')">Configure</button>
+    ${required ? '' : `<button class="link skip" onclick="showToast('You can return to this anytime')">Skip for now</button>`}
+  </li>`;
 }
 
 function showTabStub(el, name) {
@@ -661,6 +995,9 @@ function renderCongressDashboard() {
     <nav class="tabs">
       <a class="tab act">Overview</a>
       <a class="tab" href="#/clients/gsk/congresses/ddw-2026/feed">Abstracts</a>
+      <a class="tab" href="#/clients/gsk/congresses/ddw-2026/ask">Ask</a>
+      <a class="tab" href="#/clients/gsk/congresses/ddw-2026/meeting-list">Meeting List</a>
+      <a class="tab" href="#/clients/gsk/congresses/ddw-2026/topics/IL-23">Topics</a>
       <a class="tab" onclick="showToast('Sessions view coming soon')">Sessions</a>
       <a class="tab" onclick="showToast('Posters view coming soon')">Posters</a>
       <a class="tab" href="#/clients/gsk/kols">People</a>
@@ -798,6 +1135,14 @@ function renderIntelFeed() {
     `<span class="fchip ${f.cls}${f.key === 'all' ? ' act' : ''}" data-filter="${f.key}" onclick="toggleFeedFilter('${f.key}')">${f.label}</span>`
   ).join('');
 
+  const setup = getSetup(APP_STATE.activeClientId);
+  const ownDisabled = setup.pipeline.length === 0;
+  const compDisabled = setup.competitorCompanies.length === 0 && setup.competitorDrugs.length === 0;
+  const configNotices = `
+    ${ownDisabled ? `<div class="config-notice"><span class="ic">ⓘ</span><span>Own-company flagging is disabled — no pipeline assets configured.</span><a class="link" onclick="openDrawer('${APP_STATE.activeClientId}','pipeline')">Add pipeline assets →</a></div>` : ''}
+    ${compDisabled ? `<div class="config-notice"><span class="ic">ⓘ</span><span>Competitive flagging is disabled — no competitors configured.</span><a class="link" onclick="openDrawer('${APP_STATE.activeClientId}','competitors')">Add competitors →</a></div>` : ''}
+  `;
+
   setPage(`
     <div class="feed-hd">
       <div class="feed-hd-left">
@@ -815,6 +1160,7 @@ function renderIntelFeed() {
         </div>
       </div>
     </div>
+    ${configNotices}
 
     <div class="feed-bar">
       <div class="feed-search-wrap">
@@ -1698,6 +2044,15 @@ function renderProfile() {
       </div>
 
       <div class="panel">
+        <div class="panel-h">Communication & Collaboration</div>
+        <div class="panel-b">
+          <div class="kv"><span>Preferred channels</span><b>Email · Slack · In-app</b></div>
+          <div class="kv"><span>Meeting availability</span><b>Thu-Fri 8:00-17:00 local congress time</b></div>
+          <div class="kv"><span>Digest cadence</span><b>Daily during congress week</b></div>
+        </div>
+      </div>
+
+      <div class="panel">
         <div class="panel-h">Profile Completion <span class="chip own">92% Complete</span></div>
         <div class="panel-b">
           <div class="prog-bar"><i style="width:92%"></i></div>
@@ -1904,13 +2259,259 @@ function runIngestionAnimation() {
 }
 
 // ==========================================================
+// V2: CLIENT CREATION + STRATEGIC DRAWERS
+// ==========================================================
+function openCreateClientModal() {
+  const id = 'create-client-modal';
+  if (document.getElementById(id)) return;
+  const m = document.createElement('div');
+  m.id = id;
+  m.className = 'overlay-modal';
+  m.innerHTML = `
+    <div class="modal">
+      <div class="modal-hd"><h2>Create New Client Workspace</h2><button class="close" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <label><span>Client name *</span><input id="cc-name" placeholder="e.g. GSK" oninput="validateCreateClient()"></label>
+          <label><span>Short name *</span><input id="cc-abbr" placeholder="e.g. GSK" oninput="validateCreateClient()"></label>
+          <label class="span-2"><span>Primary therapeutic areas *</span><input id="cc-ta" placeholder="Comma-separated: Gastroenterology, Immunology" oninput="validateCreateClient()"></label>
+          <label class="span-2"><span>Description</span><textarea rows="2" placeholder="Brief notes about this client engagement..."></textarea></label>
+        </div>
+        <small id="cc-error" class="muted" style="display:block;margin-top:8px"></small>
+      </div>
+      <div class="modal-foot"><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" id="cc-submit" disabled onclick="createClientWorkspace()">Create Workspace</button></div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+function closeModal() {
+  document.getElementById('create-client-modal')?.remove();
+  document.getElementById('export-modal')?.remove();
+}
+
+function validateCreateClient() {
+  const name = document.getElementById('cc-name')?.value.trim() || '';
+  const abbr = document.getElementById('cc-abbr')?.value.trim() || '';
+  const tas = document.getElementById('cc-ta')?.value.split(',').map(s => s.trim()).filter(Boolean) || [];
+  const existing = DATA.clients.find(c => c.name.toLowerCase() === name.toLowerCase());
+  const error = document.getElementById('cc-error');
+  const submit = document.getElementById('cc-submit');
+  if (existing) {
+    error.innerHTML = `This client workspace already exists. <a href="#/clients/${existing.id}" onclick="closeModal()">Open existing workspace →</a>`;
+    submit.disabled = true;
+    return;
+  }
+  error.textContent = '';
+  submit.disabled = !(name && abbr && tas.length > 0);
+}
+
+function createClientWorkspace() {
+  const name = document.getElementById('cc-name')?.value.trim() || '';
+  const abbr = (document.getElementById('cc-abbr')?.value.trim() || '').toUpperCase().slice(0, 4);
+  const tas = document.getElementById('cc-ta')?.value.split(',').map(s => s.trim()).filter(Boolean) || [];
+  if (!name || !abbr || tas.length === 0) return;
+  const id = slugify(name);
+  if (DATA.clients.some(c => c.id === id)) {
+    showToast('Client already exists.');
+    return;
+  }
+  DATA.clients.push({ id, name, abbr, congresses: 0, kols: 0, insights: 0, reports: 0, prog: 5, tas: [] });
+  saveSetup(id, { ...DEFAULT_SETUP, tas: [] });
+  closeModal();
+  location.hash = `#/clients/${id}`;
+}
+
+function openDrawer(clientId, drawerId) {
+  APP_STATE.activeClientId = clientId;
+  APP_STATE.openDrawer = drawerId;
+  const setup = getSetup(clientId);
+  document.getElementById('workspace-drawer-overlay')?.remove();
+  const ov = document.createElement('div');
+  ov.id = 'workspace-drawer-overlay';
+  ov.className = 'drawer-overlay-shell';
+  ov.innerHTML = `
+    <div class="drawer-overlay" onclick="closeDrawer()"></div>
+    <aside class="drawer">
+      <div class="drawer-hd"><div><h3>${drawerTitle(drawerId)}</h3><small class="muted">${drawerHint(drawerId)}</small></div><button class="close" onclick="closeDrawer()">✕</button></div>
+      <div class="drawer-body">${drawerBody(drawerId, setup)}</div>
+      <div class="drawer-foot"><button class="btn-secondary" onclick="closeDrawer()">Cancel</button><button class="btn-primary" onclick="saveDrawer('${clientId}','${drawerId}')">Save & Continue</button></div>
+    </aside>`;
+  document.body.appendChild(ov);
+}
+
+function closeDrawer() {
+  APP_STATE.openDrawer = null;
+  document.getElementById('workspace-drawer-overlay')?.remove();
+}
+
+function drawerTitle(id) {
+  return ({
+    priorities: 'Strategic Priorities',
+    'therapeutic-areas': 'Therapeutic Areas & Focus Areas',
+    pipeline: 'Pipeline Assets',
+    competitors: 'Competitors',
+    kols: 'Priority KOLs',
+    keywords: 'Strategic Keywords & Topics'
+  })[id] || 'Configure';
+}
+function drawerHint(id) {
+  return ({
+    priorities: '3–5 high-level priorities that shape what matters for this client.',
+    'therapeutic-areas': 'The TAs and sub-topics this client cares about.',
+    pipeline: 'Own-company drug list used for flagging in Intel Feed.',
+    competitors: 'Competitor companies and drugs tracked for this workspace.',
+    kols: 'Add your priority KOLs for meeting prep.',
+    keywords: 'Keywords that boost relevance and topic matching.'
+  })[id] || '';
+}
+function drawerBody(id, setup) {
+  if (id === 'priorities') return `<textarea id="dr-priorities" rows="8" placeholder="One priority per line">${(setup.priorities || []).map(p => p.text).join('\n')}</textarea>`;
+  if (id === 'therapeutic-areas') return `<label>Therapeutic Areas (comma-separated)<input id="dr-tas" value="${(setup.tas || []).join(', ')}"></label><label style="margin-top:10px;display:block">Focus Areas (comma-separated)<input id="dr-focuses" value="${(setup.focuses || []).join(', ')}"></label>`;
+  if (id === 'pipeline') return `<textarea id="dr-pipeline" rows="6" placeholder="Drug names, comma-separated">${(setup.pipeline || []).map(p => p.name).join(', ')}</textarea>`;
+  if (id === 'competitors') return `<label>Competitor companies<input id="dr-companies" value="${(setup.competitorCompanies || []).join(', ')}"></label><label style="margin-top:10px;display:block">Competitor drugs<input id="dr-compdrugs" value="${(setup.competitorDrugs || []).join(', ')}"></label>`;
+  if (id === 'kols') return `<textarea id="dr-kols" rows="6" placeholder="KOL ids or names, comma-separated">${(setup.priorityKols || []).join(', ')}</textarea>`;
+  return `<textarea id="dr-keywords" rows="6" placeholder="Keyword list, comma-separated">${(setup.keywords || []).join(', ')}</textarea>`;
+}
+
+function saveDrawer(clientId, drawerId) {
+  const setup = getSetup(clientId);
+  if (drawerId === 'priorities') {
+    const items = (document.getElementById('dr-priorities')?.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+    if (items.length === 0) { showToast('At least one strategic priority is required.'); return; }
+    setup.priorities = items.map(text => ({ text, level: 'high' }));
+  } else if (drawerId === 'therapeutic-areas') {
+    const tas = (document.getElementById('dr-tas')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (tas.length === 0) { showToast('At least one therapeutic area is required.'); return; }
+    setup.tas = tas;
+    setup.focuses = (document.getElementById('dr-focuses')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  } else if (drawerId === 'pipeline') {
+    setup.pipeline = (document.getElementById('dr-pipeline')?.value || '').split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name, status: 'pipeline', indication: '' }));
+  } else if (drawerId === 'competitors') {
+    setup.competitorCompanies = (document.getElementById('dr-companies')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+    setup.competitorDrugs = (document.getElementById('dr-compdrugs')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  } else if (drawerId === 'kols') {
+    setup.priorityKols = (document.getElementById('dr-kols')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  } else if (drawerId === 'keywords') {
+    setup.keywords = (document.getElementById('dr-keywords')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  }
+  saveSetup(clientId, setup);
+  closeDrawer();
+  showToast('Saved.');
+  renderClientWorkspace(clientId);
+}
+
+function openExportModal(type) {
+  closeModal();
+  const m = document.createElement('div');
+  m.id = 'export-modal';
+  m.className = 'overlay-modal';
+  m.innerHTML = `<div class="modal">
+      <div class="modal-hd"><h2>Export ${type === 'topic-brief' ? 'Topic Brief' : 'Briefing Pack'}</h2><button class="close" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="checks">
+          <label><input type="checkbox" checked> Include priority rationale</label>
+          <label><input type="checkbox" checked> Include KOL dossiers</label>
+          <label><input type="checkbox" checked> Include session schedule</label>
+          <label><input type="checkbox"> Include raw abstract text appendix</label>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn-secondary" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="confirmExport('${type}')">Export</button></div>
+    </div>`;
+  document.body.appendChild(m);
+}
+
+function confirmExport(type) {
+  closeModal();
+  showToast(`✓ ${type === 'topic-brief' ? 'Topic brief' : 'Briefing pack'} queued for export`);
+}
+
+// ==========================================================
+// V2: EXTRA PAGES
+// ==========================================================
+function renderAskAnything(query) {
+  const q = query || 'Which KOLs discussed fibrosis regression as a regulatory endpoint?';
+  setPage(`<div class="ph"><div class="eyebrow">Synthesis · Retrieval</div><h2>Ask anything</h2><p>Conversational retrieval grounded in DDW 2026 intelligence.</p></div>
+    <div class="cols"><div class="panel"><div class="panel-b"><div class="search-big"><span class="ic">✦</span><input id="ask-query" value="${q.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter'){runAsk()}"><button class="btn-primary sm" onclick="runAsk()">Ask →</button></div>
+      <div class="feed-chips" style="margin-top:8px"><span class="chip soft" onclick="askPreset('Which KOLs discussed fibrosis regression?')">Which KOLs discussed fibrosis regression?</span><span class="chip soft" onclick="askPreset('What changed since DDW 2025?')">What changed since DDW 2025?</span><span class="chip soft" onclick="askPreset('Major competitor themes?')">Major competitor themes?</span></div>
+      <div class="note-box" style="margin-top:10px"><b>Q:</b> <span id="ask-q">${q}</span></div><div id="ask-answer" style="margin-top:10px;line-height:1.6;color:var(--ink)"></div>
+      <div class="sec-title" style="margin-top:14px">Sources <span class="ln"></span></div>
+      <div class="docs"><a class="doc" href="#/abstracts/plen-12"><div class="dic pdf">ABS</div><div><b>ESSENCE plenary abstract</b><small>NCT05012254 · DDW 2026</small></div></a><a class="doc" href="#/kols/sarah-chen"><div class="dic ppt">KOL</div><div><b>Dr. Sarah Chen dossier</b><small>Voice note + historical captures</small></div></a><a class="doc" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/feed"><div class="dic xls">FEED</div><div><b>Filtered Intel Feed evidence set</b><small>IL-23 + fibrosis mentions</small></div></a></div>
+    </div></div>
+    <div class="panel"><div class="panel-h">History</div><div class="panel-b"><div class="tl"><div class="tl-i"><b>Fibrosis regression endpoint</b><p>just now · 3 sources</p></div><div class="tl-i"><b>JAK safety RWD signals</b><p>1h ago · 7 sources</p></div><div class="tl-i"><b>IL-23 head-to-head status</b><p>3h ago · 4 sources</p></div><div class="tl-i"><b>Competitor symposium agenda</b><p>Yesterday · 12 sources</p></div></div></div></div></div>`);
+  streamAskAnswer();
+}
+
+function runAsk() {
+  const q = document.getElementById('ask-query')?.value || '';
+  location.hash = `#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/ask?q=${encodeURIComponent(q)}`;
+}
+
+function askPreset(text) {
+  const el = document.getElementById('ask-query');
+  if (!el) return;
+  el.value = text;
+  runAsk();
+}
+
+function streamAskAnswer() {
+  const el = document.getElementById('ask-answer');
+  if (!el) return;
+  const answer = "Three KOLs on your list addressed fibrosis regression as a potential regulatory endpoint at DDW 2026. Dr. Loomba emphasized biopsy-confirmed regression with semaglutide and the role of NITs in operationalizing endpoint readiness. Dr. Ratziu reinforced that FIB-4 cut-off standardization remains the key blocker before broad regulatory confidence. Dr. Sarah Chen drew a parallel to treat-to-target endpoint evolution in IBD, suggesting fibrosis regression is nearing an analogous acceptance curve. Net sentiment is cautiously positive, but stakeholders still want prospective head-to-head and longer durability data before definitive positioning.";
+  el.textContent = '';
+  const words = answer.split(' ');
+  let idx = 0;
+  const timer = setInterval(() => {
+    el.textContent += (idx === 0 ? '' : ' ') + words[idx];
+    idx++;
+    if (idx >= words.length) clearInterval(timer);
+  }, 18);
+}
+
+function renderMeetingList() {
+  const kols = DATA.kols.slice(0, 8);
+  const sessions = DATA.abstracts.slice(0, 8);
+  setPage(`<div class="crumb">Client Workspaces › ${getClient(APP_STATE.activeClientId).name} › DDW 2026 › <b>Meeting List</b></div>
+    <div class="ph"><div class="eyebrow">Pre-congress deliverable</div><h2>Your DDW 2026 meeting list</h2><p>Tagged KOLs and prioritized sessions.</p><div class="ph-actions"><button class="btn-secondary" onclick="openExportModal('meeting-list')">⬇ Export briefing pack</button><button class="btn-secondary" onclick="showToast('Print dialog coming soon')">🖨 Print</button></div></div>
+    <nav class="tabs"><a class="tab act" onclick="toggleMeetingTab('kols')">KOLs (${kols.length})</a><a class="tab" onclick="toggleMeetingTab('sessions')">Sessions & Abstracts (${sessions.length})</a></nav>
+    <div id="meeting-kols" class="cols-2">${kols.map(k => `<div class="panel"><div class="panel-b"><div class="kol-cell"><div class="av lg">${k.initials}</div><div><b>${k.name}</b><div class="meta">${k.affiliation}</div><div class="feed-chips"><span class="chip own xs">Tier ${k.tier}</span><span class="chip soft xs">${k.sentiment}</span></div></div></div><div class="note-box" style="margin-top:8px">Sessions at DDW 2026: ${k.activity.length + 1}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn-primary sm" onclick="showToast('Scheduling flow coming soon')">📅 Schedule meeting</button><a class="btn-secondary sm" href="#/kols/${k.id}">Open dossier →</a></div></div></div>`).join('')}</div>
+    <div id="meeting-sessions" class="panel" style="display:none"><div class="panel-b">${sessions.map((a, i) => `<a class="slot ${i===2 ? 'warn-slot' : ''}" href="#/abstracts/${a.id}"><div class="when"><small>${a.date?.split(' ')[0] || 'THU'}</small><b>${(a.schedule || '').split('·')[0].trim()}</b></div><div><h4>${a.title}</h4><p>${a.schedule}</p>${i===2 ? '<small style="color:var(--amber)">Conflict: overlaps with another saved session</small>' : ''}</div></a>`).join('')}</div></div>`);
+}
+
+function toggleMeetingTab(which) {
+  const k = document.getElementById('meeting-kols');
+  const s = document.getElementById('meeting-sessions');
+  if (!k || !s) return;
+  k.style.display = which === 'kols' ? '' : 'none';
+  s.style.display = which === 'sessions' ? '' : 'none';
+  document.querySelectorAll('.tabs .tab').forEach((t, idx) => t.classList.toggle('act', (which === 'kols' && idx === 0) || (which === 'sessions' && idx === 1)));
+}
+
+function renderTopicLandscape(topicSlug) {
+  const topicName = decodeURIComponent(topicSlug || 'IL-23');
+  const topicAbstracts = DATA.abstracts.filter(a => (a.topic || '').toLowerCase().includes(topicName.toLowerCase()) || (a.topics || []).join(' ').toLowerCase().includes(topicName.toLowerCase())).slice(0,5);
+  setPage(`<a class="back-link" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}">← Back to congress</a>
+    <div class="ph"><div class="eyebrow">Topic landscape · DDW 2026</div><h2>${topicName} <span class="chip comp">COMPETITIVE</span></h2><p>Per-topic pre-congress brief.</p><div class="ph-actions"><button class="btn-secondary" onclick="openDrawer('${APP_STATE.activeClientId}','keywords')">Configure topic →</button><button class="btn-secondary" onclick="openExportModal('topic-brief')">⬇ Export brief</button><button class="btn-primary" onclick="location.hash='#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/meeting-list'">＋ Add to meeting list</button></div></div>
+    <div class="metrics"><div class="metric"><div class="lab">Abstracts in this topic</div><div class="num">41</div></div><div class="metric"><div class="lab">Late-breaking</div><div class="num">3</div></div><div class="metric"><div class="lab">Plenaries</div><div class="num">2</div></div><div class="metric"><div class="lab">Avg. priority</div><div class="num">82</div></div></div>
+    <div class="cols"><div class="panel"><div class="panel-h">Synthesis <span class="chip own xs">AI-GENERATED</span></div><div class="panel-b">IL-23 positioning at DDW 2026 is dominated by head-to-head readouts and long-term durability data, with mounting pressure for class differentiation by selectivity. Competitive sentiment is positive on efficacy but skeptical on biomarker-guided selection and post-week-52 durability confidence.</div></div><div class="panel"><div class="panel-h">Evidence gaps</div><div class="panel-b"><div class="note"><b>No validated response biomarker</b><p>Current attempts remain exploratory.</p></div><div class="note"><b>Limited >52 week outcomes</b><p>Durability evidence still sparse across class.</p></div><div class="note"><b>No prospective H2H IL-23 vs IL-12/23 RCT</b><p>Comparative certainty remains constrained.</p></div></div></div></div>
+    <div class="sec-title">Abstracts in this topic <span class="ln"></span></div><div class="acards">${topicAbstracts.map(a => `<a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}"><div class="acard-body"><div class="acard-chips">${chipBySignal(a.signal)} ${chipBySession(a.session)}</div><div class="acard-title">${a.title}</div><div class="acard-meta"><span>${a.author}</span><span class="acard-sep">·</span><span>${a.schedule}</span></div></div><div class="acard-score-col"><div class="acard-priority-label">Priority</div>${scoreRing(a.priority, scoreRingColor(a.signal))}</div></a>`).join('')}</div>
+    <div class="sec-title">KOLs presenting on this topic <span class="ln"></span></div><div class="feed-chips">${DATA.kols.slice(0,4).map(k => `<a class="chip line" href="#/kols/${k.id}">${k.name}</a>`).join('')}</div>`);
+}
+
+// ==========================================================
 // INIT
 // ==========================================================
 window.addEventListener('hashchange', route);
 window.addEventListener('load', () => {
+  const preferred = localStorage.getItem(defaultWorkspaceKey());
+  if (preferred && DATA.clients.some(c => c.id === preferred)) APP_STATE.activeClientId = preferred;
+  if (location.search.includes('reset=1')) {
+    Object.keys(localStorage).forEach(k => { if (k.startsWith('client-') || k === defaultWorkspaceKey()) localStorage.removeItem(k); });
+    showToast('Demo state reset.');
+  }
   if (!location.hash || location.hash === '#') {
     location.hash = '#/dashboard';
   } else {
     route();
   }
+  ensureTopbarCreateMenu();
 });

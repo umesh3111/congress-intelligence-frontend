@@ -1217,6 +1217,14 @@ a.metric:hover { box-shadow: var(--sh2); }
   border: 1px dashed var(--teal); cursor: pointer;
 }
 .chip-add:hover { background: var(--teal); color: #fff; }
+.comp-list h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--slate-l);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.row-add + .row-add { margin-left: 6px; }
 
 .checks { display: flex; flex-direction: column; gap: 6px; }
 .checks label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink); cursor: pointer; }

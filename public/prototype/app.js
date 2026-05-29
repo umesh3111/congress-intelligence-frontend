@@ -305,6 +305,7 @@ let APP_STATE = {
 function setupKey(clientId) { return `client-${clientId}-setup`; }
 function readyBannerKey(clientId) { return `client-${clientId}-ready-shown`; }
 function defaultWorkspaceKey() { return 'user-default-workspace'; }
+function competitiveTagsKey(clientId) { return `client-${clientId}-competitive-tags`; }
 
 function getClient(clientId) {
   return DATA.clients.find(c => c.id === clientId) || DATA.clients[0];
@@ -359,6 +360,27 @@ function checklistStatus(clientId) {
     keywords: setup.keywords.length > 0,
     weights: true
   };
+}
+
+function getCompetitiveTags(clientId) {
+  const raw = localStorage.getItem(competitiveTagsKey(clientId));
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        kolIds: Array.isArray(parsed.kolIds) ? parsed.kolIds : [],
+        abstractIds: Array.isArray(parsed.abstractIds) ? parsed.abstractIds : []
+      };
+    } catch (e) {}
+  }
+  return { kolIds: [], abstractIds: [] };
+}
+
+function saveCompetitiveTags(clientId, tags) {
+  localStorage.setItem(competitiveTagsKey(clientId), JSON.stringify({
+    kolIds: Array.from(new Set(tags.kolIds || [])),
+    abstractIds: Array.from(new Set(tags.abstractIds || []))
+  }));
 }
 
 // ==========================================================
@@ -462,6 +484,7 @@ function route() {
   const askMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/ask$/);
   const meetingMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/meeting-list$/);
   const topicMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/topics\/([^/]+)$/);
+  const competitiveMatch = hashOnly.match(/^#\/clients\/([^/]+)\/competitive$/);
   const kolsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/kols$/);
   const settingsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/settings\/prioritization$/);
   const newCongressMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/new$/);
@@ -491,6 +514,9 @@ function route() {
     APP_STATE.activeClientId = topicMatch[1];
     APP_STATE.activeCongressId = topicMatch[2];
     renderTopicLandscape(topicMatch[3]); highlightNav('topic');
+  } else if (competitiveMatch) {
+    APP_STATE.activeClientId = competitiveMatch[1];
+    renderCompetitiveWorkspace(); highlightNav('competitive');
   } else if (kolsMatch) {
     APP_STATE.activeClientId = kolsMatch[1];
     renderKolDirectory(); highlightNav('kols');
@@ -562,7 +588,7 @@ function renderSidebar() {
   const configured = isRequiredSetupComplete(client.id);
   const disabledClass = configured ? '' : ' nav-item-dis';
   const disabledClick = configured ? '' : `onclick="event.preventDefault();showToast('Complete required setup items to unlock this module')"`; 
-  const isActiveClientRoute = ['client', 'congress', 'feed', 'kols', 'settings', 'ask', 'meeting', 'topic'].includes(APP_STATE.activeNavKey);
+  const isActiveClientRoute = ['client', 'congress', 'feed', 'kols', 'settings', 'ask', 'meeting', 'topic', 'competitive'].includes(APP_STATE.activeNavKey);
 
   const clientItems = DATA.clients.map(c => {
     const cConfigured = isRequiredSetupComplete(c.id);
@@ -625,6 +651,9 @@ function renderSidebar() {
     </a>
     <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'kols') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/kols" ${disabledClick}>
       <span class="nav-icon">⊛</span>KOL Directory
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'competitive') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/competitive" ${disabledClick}>
+      <span class="nav-icon">◍</span>Competitive
     </a>
 
     <div class="nav-label">Configuration</div>
@@ -902,6 +931,7 @@ function renderClientWorkspace(clientId = APP_STATE.activeClientId, drawerId = n
       <a class="tab act">Overview</a>
       <a class="tab" href="${congressPath}">Congresses</a>
       <a class="tab" href="#/clients/${clientId}/kols">KOLs</a>
+      <a class="tab" href="#/clients/${clientId}/competitive">Competitive</a>
       <a class="tab" onclick="showTabStub(this,'Insights')">Insights</a>
       <a class="tab" onclick="showTabStub(this,'Reports')">Reports</a>
       <a class="tab" onclick="showTabStub(this,'Documents')">Documents</a>
@@ -1110,6 +1140,163 @@ function renderCongressDashboard() {
   `);
 }
 
+function autoCompetitiveAbstractIds(clientId = APP_STATE.activeClientId) {
+  const setup = getSetup(clientId);
+  const competitorDrugs = (setup.competitorDrugs || []).map(d => String(d).toLowerCase());
+  return DATA.abstracts.filter(a => {
+    if (a.signal === 'competitive') return true;
+    const drugs = (a.drugs || []).map(d => String(d).toLowerCase());
+    return drugs.some(d => competitorDrugs.includes(d));
+  }).map(a => a.id);
+}
+
+function autoCompetitiveKolIds(clientId = APP_STATE.activeClientId) {
+  const abstractIdSet = new Set(autoCompetitiveAbstractIds(clientId));
+  return DATA.abstracts
+    .filter(a => abstractIdSet.has(a.id))
+    .map(a => a.authorId)
+    .filter(Boolean);
+}
+
+function isAbstractCompetitiveTagged(abstractId, clientId = APP_STATE.activeClientId) {
+  const tags = getCompetitiveTags(clientId);
+  const autoSet = new Set(autoCompetitiveAbstractIds(clientId));
+  return autoSet.has(abstractId) || tags.abstractIds.includes(abstractId);
+}
+
+function isKolCompetitiveTagged(kolId, clientId = APP_STATE.activeClientId) {
+  const tags = getCompetitiveTags(clientId);
+  const autoSet = new Set(autoCompetitiveKolIds(clientId));
+  return autoSet.has(kolId) || tags.kolIds.includes(kolId);
+}
+
+function toggleKolCompetitiveTag(kolId) {
+  const clientId = APP_STATE.activeClientId;
+  const tags = getCompetitiveTags(clientId);
+  if (tags.kolIds.includes(kolId)) {
+    tags.kolIds = tags.kolIds.filter(id => id !== kolId);
+    showToast('KOL removed from competitive tags');
+  } else {
+    tags.kolIds.push(kolId);
+    showToast('KOL tagged as competitive');
+  }
+  saveCompetitiveTags(clientId, tags);
+  route();
+}
+
+function toggleAbstractCompetitiveTag(abstractId) {
+  const clientId = APP_STATE.activeClientId;
+  const tags = getCompetitiveTags(clientId);
+  if (tags.abstractIds.includes(abstractId)) {
+    tags.abstractIds = tags.abstractIds.filter(id => id !== abstractId);
+    showToast('Abstract removed from competitive tags');
+  } else {
+    tags.abstractIds.push(abstractId);
+    showToast('Abstract tagged as competitive');
+  }
+  saveCompetitiveTags(clientId, tags);
+  route();
+}
+
+function renderCompetitiveWorkspace(clientId = APP_STATE.activeClientId) {
+  const client = getClient(clientId);
+  const setup = getSetup(clientId);
+  const tags = getCompetitiveTags(clientId);
+
+  const autoAbs = new Set(autoCompetitiveAbstractIds(clientId));
+  const autoKols = new Set(autoCompetitiveKolIds(clientId));
+
+  const taggedAbstracts = DATA.abstracts.filter(a => autoAbs.has(a.id) || tags.abstractIds.includes(a.id));
+  const taggedKols = DATA.kols.filter(k => autoKols.has(k.id) || tags.kolIds.includes(k.id));
+
+  const kolRows = taggedKols.slice(0, 10).map(k => `
+    <tr>
+      <td><b>${k.name}</b><br><small>${k.affiliation}</small></td>
+      <td>${k.focus.slice(0,2).map(f => `<span class="chip line" style="margin:2px">${f}</span>`).join('')}</td>
+      <td>${autoKols.has(k.id) ? '<span class="chip soft xs">Auto</span>' : '<span class="chip line xs">Manual</span>'}</td>
+      <td><button class="btn-secondary sm" onclick="toggleKolCompetitiveTag('${k.id}')">${tags.kolIds.includes(k.id) ? 'Untag' : 'Tag'}</button></td>
+    </tr>
+  `).join('');
+
+  const abstractCards = taggedAbstracts.slice(0, 8).map(a => `
+    <a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}">
+      <div class="acard-body">
+        <div class="acard-chips">
+          <span class="chip comp">COMPETITIVE</span>
+          ${chipBySession(a.session)}
+          <span class="chip soft xs">${a.topic}</span>
+          ${autoAbs.has(a.id) ? '<span class="chip soft xs">Auto</span>' : '<span class="chip line xs">Manual</span>'}
+        </div>
+        <div class="acard-title">${a.title}</div>
+        <div class="acard-meta">${a.author} · ${a.affiliation}</div>
+      </div>
+      <div class="acard-score-col">
+        <div class="acard-priority-label">Priority</div>
+        ${scoreRing(a.priority, '#B45309')}
+        <div class="acard-acts">
+          <button title="Toggle tag" onclick="event.preventDefault();event.stopPropagation();toggleAbstractCompetitiveTag('${a.id}')">${tags.abstractIds.includes(a.id) ? '−' : '+'}</button>
+        </div>
+      </div>
+    </a>
+  `).join('');
+
+  setPage(`
+    <div class="crumb">Client Workspaces › <b>${client.name}</b> › Competitive</div>
+    <div class="ph">
+      <div class="eyebrow">${client.name} workspace</div>
+      <h2>Competitive Intelligence</h2>
+      <p>Tag competitor-relevant KOLs and abstracts to sharpen meeting prep and narrative tracking.</p>
+      <div class="ph-actions">
+        <button class="btn-secondary" onclick="openDrawer('${clientId}','competitors')">Configure competitors</button>
+        <a class="btn-primary" href="#/clients/${clientId}/congresses/${APP_STATE.activeCongressId}/feed">Review Intel Feed</a>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <a class="tab" href="#/clients/${clientId}">Overview</a>
+      <a class="tab" href="#/clients/${clientId}/kols">KOLs</a>
+      <a class="tab act">Competitive</a>
+    </nav>
+
+    <div class="metrics">
+      <div class="metric"><div class="lab">Competitor Companies</div><div class="num">${setup.competitorCompanies.length}</div></div>
+      <div class="metric"><div class="lab">Competitor Drugs</div><div class="num">${setup.competitorDrugs.length}</div></div>
+      <div class="metric"><div class="lab">Tagged KOLs</div><div class="num">${taggedKols.length}</div></div>
+      <div class="metric"><div class="lab">Tagged Abstracts</div><div class="num">${taggedAbstracts.length}</div></div>
+    </div>
+
+    <div class="cols-2" style="align-items:start">
+      <div class="panel">
+        <div class="panel-h">Competitor Registry</div>
+        <div class="panel-b">
+          <div class="comp-list">
+            <h4>Companies</h4>
+            <div>${(setup.competitorCompanies || []).map(c => `<span class="chip comp" style="margin:2px">${c}</span>`).join('') || '<span class="muted">No competitor companies configured</span>'}</div>
+            <h4 style="margin-top:10px">Drugs</h4>
+            <div>${(setup.competitorDrugs || []).map(d => `<span class="chip line" style="margin:2px">${d}</span>`).join('') || '<span class="muted">No competitor drugs configured</span>'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h">Competitive KOLs</div>
+        <div class="panel-b" style="padding:0">
+          <table class="kol-table">
+            <thead><tr><th>KOL</th><th>Focus</th><th>Source</th><th></th></tr></thead>
+            <tbody>${kolRows || '<tr><td colspan="4"><div class="empty"><h3>No tagged KOLs yet</h3><p>Tag KOLs from the KOL Directory or inferred abstract activity.</p></div></td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">Competitive Abstracts</div>
+      <div class="panel-b">
+        <div class="acards">${abstractCards || '<div class="empty"><h3>No competitive abstracts yet</h3><p>Use feed tagging once competitor assets are configured.</p></div>'}</div>
+      </div>
+    </div>
+  `);
+}
+
 // ==========================================================
 // PAGE 4: INTEL FEED
 // ==========================================================
@@ -1226,6 +1413,7 @@ function renderFeedCards() {
 
   el.innerHTML = results.map(a => {
     const kol = getKol(a.authorId);
+    const isCompetitive = isAbstractCompetitiveTagged(a.id);
     const kolLink = kol
       ? `<span class="acard-author-link" role="link" tabindex="0" onclick="event.preventDefault();event.stopPropagation();location.hash='#/kols/${kol.id}'" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();location.hash='#/kols/${kol.id}'}">${a.author}</span>`
       : `<span class="acard-author">${a.author}</span>`;
@@ -1239,7 +1427,7 @@ function renderFeedCards() {
     return `<a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}">
       <div class="acard-body">
         <div class="acard-chips">
-          ${chipBySignal(a.signal)}
+          ${isCompetitive ? '<span class="chip comp">COMPETITIVE</span>' : chipBySignal(a.signal)}
           ${chipBySession(a.session)}
           <span class="chip soft xs">${a.topic}</span>
         </div>
@@ -1261,6 +1449,7 @@ function renderFeedCards() {
         <div class="acard-acts">
           <button title="Save" onclick="event.preventDefault();event.stopPropagation();showToast('Saved to your list')">☆</button>
           <button title="Add" onclick="event.preventDefault();event.stopPropagation();showToast('Added to meeting list')">+</button>
+          <button title="Tag competitive" onclick="event.preventDefault();event.stopPropagation();toggleAbstractCompetitiveTag('${a.id}')">${isCompetitive ? '◉' : '○'}</button>
         </div>
       </div>
     </a>`;
@@ -1315,6 +1504,7 @@ function renderAbstractDetail(id) {
   }
 
   const kol = getKol(a.authorId);
+  const isCompetitive = isAbstractCompetitiveTagged(a.id);
   const related = (a.relatedIds || []).map(rid => getAbstract(rid)).filter(Boolean).slice(0, 3);
 
   const drugList = (a.drugs || []).map(d => {
@@ -1350,7 +1540,7 @@ function renderAbstractDetail(id) {
 
     <div class="abstract-hd">
       <div class="top">
-        ${chipBySignal(a.signal)}
+        ${isCompetitive ? '<span class="chip comp">COMPETITIVE</span>' : chipBySignal(a.signal)}
         ${chipBySession(a.session)}
         <span class="chip soft">${a.topic}</span>
       </div>
@@ -1361,6 +1551,7 @@ function renderAbstractDetail(id) {
       </div>
       <div class="hd-actions">
         <button class="btn-primary" onclick="showToast('✓ Added to meeting list')">＋ Add to meeting list</button>
+        <button class="btn-secondary" onclick="toggleAbstractCompetitiveTag('${a.id}')">${isCompetitive ? '◉ Tagged competitive' : '○ Tag as competitive'}</button>
         <button class="btn-secondary" onclick="showToast('★ Marked as high priority')">★ Mark priority</button>
         <button class="btn-secondary" onclick="showToast('☆ Saved to your list')">☆ Save</button>
         ${scoreRing(a.priority, scoreRingColor(a.signal))}
@@ -1515,6 +1706,7 @@ function renderKolRows() {
           <div>
             <b>${k.name}</b> ${matchChip(k.match)}<br>
             <small>${k.credentials} · ${k.city}</small>
+            ${isKolCompetitiveTagged(k.id) ? '<br><span class="chip comp xs">COMPETITIVE</span>' : ''}
           </div>
         </div>
       </td>
@@ -1530,7 +1722,10 @@ function renderKolRows() {
         <div class="influence ${influenceClass(k.influence)}"><b>${k.influence}</b><small>${k.influence >= 90 ? 'Very High' : k.influence >= 80 ? 'High' : 'Moderate'}</small></div>
         <small class="mono">${k.pubs} pubs · ${k.citations.toLocaleString()} citations</small>
       </td>
-      <td><button class="row-add" title="Add to meeting list" onclick="event.stopPropagation();showToast('✓ ${k.name} added to meeting list')">+</button></td>
+      <td>
+        <button class="row-add" title="Add to meeting list" onclick="event.stopPropagation();showToast('✓ ${k.name} added to meeting list')">+</button>
+        <button class="row-add" title="Toggle competitive tag" onclick="event.stopPropagation();toggleKolCompetitiveTag('${k.id}')">${isKolCompetitiveTagged(k.id) ? '◉' : '○'}</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -1548,6 +1743,7 @@ function clearKolSearch() {
 // ==========================================================
 function renderKolDossier(id) {
   const kol = getKol(id) || getKol('sarah-chen');
+  const isCompetitive = isKolCompetitiveTagged(kol.id);
 
   // Publication bar chart data
   const pubYears = [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
@@ -1580,11 +1776,15 @@ function renderKolDossier(id) {
         <div class="inst">${kol.affiliation} · ${kol.city}</div>
         <div class="tags">
           <span class="tag"><span class="dot"></span>Tier ${kol.tier} KOL</span>
+          ${isCompetitive ? '<span class="tag">Competitive</span>' : ''}
           <span class="tag">Sentiment: ${kol.sentiment}</span>
           ${kol.focus.slice(0,2).map(f => `<span class="tag">${f}</span>`).join('')}
         </div>
       </div>
-      <button class="addbtn" onclick="showToast('✓ ${kol.name.replace(/'/g,"\\'")} added to meeting list')">+ Add to meeting list</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-secondary" onclick="toggleKolCompetitiveTag('${kol.id}')">${isCompetitive ? '◉ Competitive tagged' : '○ Tag competitive'}</button>
+        <button class="addbtn" onclick="showToast('✓ ${kol.name.replace(/'/g,"\\'")} added to meeting list')">+ Add to meeting list</button>
+      </div>
     </div>
 
     <div class="cols-2">

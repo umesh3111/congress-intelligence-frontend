@@ -25,7 +25,7 @@ const DATA = {
 
   congresses: [
     { id:"ddw-2026", name:"Digestive Disease Week 2026", acronym:"DDW",
-      dates:"May 3–6, 2026", city:"San Diego, CA", status:"planning", client:"gsk", inDays:41 },
+      dates:"May 3–6, 2026", city:"San Diego, CA", status:"active", client:"gsk", inDays:41 },
     { id:"asco-2026", name:"ASCO Annual Meeting 2026", acronym:"ASCO",
       dates:"May 31–Jun 4, 2026", city:"Chicago, IL", status:"planning", client:"merck", inDays:69 },
     { id:"ats-2026", name:"ATS International Conference 2026", acronym:"ATS",
@@ -265,8 +265,144 @@ const DATA = {
     { name:"IL-23 inhibitors — positioning", signal:"competitive", count:41, coverage:88 },
     { name:"MASH — fibrosis regression & NITs", signal:"indication", count:36, coverage:74 },
     { name:"JAK inhibitors — safety & RWD", signal:"competitive", count:29, coverage:62 }
+  ],
+
+  team: [
+    { id: "sarah-p", name: "Sarah Phillips", initials: "SP", role: "Director" },
+    { id: "james-w", name: "James Walker", initials: "JW", role: "MSL" },
+    { id: "emily-c", name: "Emily Chen", initials: "EC", role: "Medical Affairs Lead" },
+    { id: "david-p", name: "David Park", initials: "DP", role: "MSL" },
+    { id: "maria-r", name: "Maria Rivera", initials: "MR", role: "Scientific Communications" }
+  ],
+
+  captures: [],
+  captureDripFeed: [
+    { author: "emily-c", type: "voice", capture_type: "Session reaction", visibility: "shared",
+      text: "AbbVie symposium room overflowing — standing room only for Skyrizi durability data.",
+      attached_companies: ["AbbVie"], attached_topics: ["il-23"], congress: "ddw-2026", day: 1 },
+    { author: "david-p", type: "text", capture_type: "General", visibility: "shared",
+      text: "Plenary just announced extended Q&A — expect 15 min overrun on ESSENCE fibrosis session.",
+      attached_abstracts: ["plen-12"], congress: "ddw-2026", day: 1 },
+    { author: "james-w", type: "photo", capture_type: "Competitive intel", visibility: "shared",
+      caption: "JAKi safety poster session — packed booth, Janssen messaging on MACE rates.",
+      attached_topics: ["jaki-safety"], congress: "ddw-2026", day: 1 },
+    { author: "maria-r", type: "text", capture_type: "Q&A highlight", visibility: "shared",
+      text: "Audience question on transmural healing endpoints — panel agreed FDA timeline ~2027.",
+      attached_kols: ["sarah-chen"], attached_topics: ["il-23"], congress: "ddw-2026", day: 2 },
+    { author: "emily-c", type: "voice", capture_type: "Hallway", visibility: "private",
+      text: "Quick hallway with Dr. Vermeire — skeptical on IL-23 selectivity claims without biomarker data.",
+      attached_kols: ["bram-vermeire"], congress: "ddw-2026", day: 2 }
   ]
 };
+
+const CAPTURE_DAY_LABELS = { 1: "SUN 3", 2: "MON 4", 3: "TUE 5", 4: "WED 6" };
+const CURRENT_USER_ID = "sarah-p";
+
+function seedCaptures() {
+  const base = [
+    { id: "v-217", type: "voice", duration: "1:48", author: "sarah-p", visibility: "shared", capture_type: "Spotlight meeting",
+      location: "Hall A · San Diego Convention Center", congress: "ddw-2026", day: 1, timestamp: "2026-05-03T14:34:00",
+      attached_kols: ["sarah-chen"], attached_abstracts: ["lba-101"], attached_topics: ["il-23"],
+      transcript: "Just came out of a 20-minute with Sarah Chen. Her read on the SEQUENCE-UC late-breaker is that the H2H risankizumab vs ustekinumab effect size is real but smaller than the field was hoping. She's bullish on transmural healing as a regulatory endpoint — said FDA is reviewing transmural for a labelled endpoint by 2027. Open to a Q3 discussion on the GSK pipeline." },
+    { id: "p-410", type: "photo", author: "james-w", visibility: "shared", capture_type: "Competitive intel",
+      caption: "AbbVie poster on Skyrizi 5-year safety. Strong RWE numbers — no new safety signals at 5 years.",
+      image_url: "", congress: "ddw-2026", day: 1, timestamp: "2026-05-03T14:20:00",
+      attached_companies: ["AbbVie"], attached_drugs: ["risankizumab"], attached_topics: ["il-23"] },
+    { id: "n-091", type: "text", author: "sarah-p", visibility: "private", capture_type: "Session reaction",
+      text: "Late-breaker LB01 audience: smaller than expected, ~60% capacity. Crowd reaction muted on the H2H secondary endpoint.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T13:50:00", attached_abstracts: ["lba-101"] },
+    { id: "v-218", type: "voice", duration: "0:92", author: "james-w", visibility: "shared", capture_type: "Competitive intel",
+      transcript: "AbbVie booth claims 5-year safety data holds — reps pushing head-to-head narrative vs ustekinumab.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T12:10:00", attached_companies: ["AbbVie"], attached_topics: ["il-23"] },
+    { id: "n-092", type: "text", author: "emily-c", visibility: "shared", capture_type: "Session reaction",
+      text: "REAL-JAK registry presentation — 5-year MACE rates lower than boxed warning suggests; audience skeptical.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T11:30:00", attached_abstracts: ["oral-203"], attached_topics: ["jaki-safety"] },
+    { id: "v-219", type: "voice", duration: "2:05", author: "david-p", visibility: "shared", capture_type: "Hallway",
+      transcript: "Dr. Sandborn in hallway — treat-to-target symposium timing works for advisory board outreach post-congress.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T10:45:00", attached_kols: ["william-sandborn"] },
+    { id: "n-093", type: "text", author: "maria-r", visibility: "shared", capture_type: "Q&A highlight",
+      text: "ESSENCE plenary Q&A: fibrosis regression as registrational endpoint gaining traction — Loomba very bullish.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T10:00:00", attached_abstracts: ["plen-12"], attached_topics: ["mash-nit"] },
+    { id: "p-411", type: "photo", author: "james-w", visibility: "shared", capture_type: "Competitive intel",
+      caption: "Merck booth — mirikizumab durability wall chart. Positioning vs risankizumab selectivity.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T09:15:00", attached_drugs: ["mirikizumab"], attached_topics: ["il-23"] },
+    { id: "v-220", type: "voice", duration: "1:22", author: "emily-c", visibility: "private", capture_type: "Spotlight meeting",
+      transcript: "Pre-meeting prep note: Chen wants histologic remission data before pipeline discussion.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T08:30:00", attached_kols: ["sarah-chen"] },
+    { id: "n-094", type: "text", author: "sarah-p", visibility: "shared", capture_type: "General",
+      text: "Registration desk — congress app down for 20 min. Team using paper schedules.",
+      congress: "ddw-2026", day: 1, timestamp: "2026-05-03T07:45:00" },
+    { id: "v-221", type: "voice", duration: "1:55", author: "james-w", visibility: "shared", capture_type: "Session reaction",
+      transcript: "VIVID-2 oral — audience engaged on mirikizumab vs adalimumab. Competitive undertone in Q&A.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T15:00:00", attached_abstracts: ["oral-156"], attached_topics: ["il-23"] },
+    { id: "n-095", type: "text", author: "david-p", visibility: "shared", capture_type: "Competitive intel",
+      text: "Janssen suite — Stelara lifecycle messaging heavy on established safety vs IL-23 novelty.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T14:20:00", attached_companies: ["Janssen"], attached_topics: ["il-23"] },
+    { id: "p-412", type: "photo", author: "maria-r", visibility: "shared", capture_type: "Session reaction",
+      caption: "Symposium hall B — packed for treat-to-target IBD consensus. Chen chairing.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T13:00:00", attached_kols: ["sarah-chen"], attached_abstracts: ["sym-04"] },
+    { id: "v-222", type: "voice", duration: "1:10", author: "sarah-p", visibility: "shared", capture_type: "Hallway",
+      transcript: "Bram Vermeire — cautious on IL-23 class differentiation without biomarker. Wants RWE on switching.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T12:30:00", attached_kols: ["bram-vermeire"], attached_topics: ["il-23"] },
+    { id: "n-096", type: "text", author: "emily-c", visibility: "private", capture_type: "General",
+      text: "Internal: client wants daily digest by 6pm — prioritize LB captures.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T11:00:00" },
+    { id: "v-223", type: "voice", duration: "2:30", author: "maria-r", visibility: "shared", capture_type: "Q&A highlight",
+      transcript: "JAK safety panel — Feagan pushed back on registry MACE interpretation. Heated exchange.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T10:15:00", attached_kols: ["brian-feagan"], attached_topics: ["jaki-safety"] },
+    { id: "n-097", type: "text", author: "james-w", visibility: "shared", capture_type: "Session reaction",
+      text: "Poster walk P-237 — Chen presenting histologic remission durability. Strong interest from KOL crowd.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T09:30:00", attached_kols: ["sarah-chen"], attached_abstracts: ["p-237"] },
+    { id: "p-413", type: "photo", author: "david-p", visibility: "shared", capture_type: "Competitive intel",
+      caption: "Filgotinib poster — Jyseleca long-term data. EU positioning vs upadacitinib.",
+      congress: "ddw-2026", day: 2, timestamp: "2026-05-04T08:45:00", attached_drugs: ["filgotinib"], attached_topics: ["jaki-safety"] },
+    { id: "v-224", type: "voice", duration: "1:40", author: "sarah-p", visibility: "shared", capture_type: "Spotlight meeting",
+      transcript: "Subrata Ghosh — interested in GSK semaglutide MASH program. Wants biopsy endpoint discussion.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T16:00:00", attached_kols: ["subrata-ghosh"], attached_topics: ["mash-nit"] },
+    { id: "n-098", type: "text", author: "james-w", visibility: "shared", capture_type: "Competitive intel",
+      text: "Risankizumab 2-year CD durability oral — crowd size moderate. No surprise on efficacy narrative.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T14:30:00", attached_abstracts: ["oral-415"], attached_topics: ["il-23"] },
+    { id: "v-225", type: "voice", duration: "0:88", author: "emily-c", visibility: "shared", capture_type: "Hallway",
+      transcript: "Walter Reinisch — open to post-congress advisory on mucosal healing endpoints.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T13:15:00", attached_kols: ["walter-reinisch"] },
+    { id: "n-099", type: "text", author: "maria-r", visibility: "private", capture_type: "Session reaction",
+      text: "OPAL obefazimod poster — niche audience but positive on oral mechanism in biologic failures.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T12:00:00", attached_abstracts: ["lba-102"] },
+    { id: "p-414", type: "photo", author: "sarah-p", visibility: "shared", capture_type: "General",
+      caption: "Team war room — daily synthesis board updated with IL-23 themes.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T11:30:00", attached_topics: ["il-23"] },
+    { id: "v-226", type: "voice", duration: "1:15", author: "david-p", visibility: "shared", capture_type: "Q&A highlight",
+      transcript: "Loomba keynote follow-up — NIT standardization still the blocker for fibrosis regression label.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T10:00:00", attached_kols: ["rohit-loomba"], attached_topics: ["mash-nit"] },
+    { id: "n-100", type: "text", author: "james-w", visibility: "shared", capture_type: "Competitive intel",
+      text: "Vedolizumab vs JAK head-to-head poster — Entyvio positioning on safety-first narrative.",
+      congress: "ddw-2026", day: 3, timestamp: "2026-05-05T09:20:00", attached_abstracts: ["oral-289"], attached_topics: ["jaki-safety"] },
+    { id: "v-227", type: "voice", duration: "2:00", author: "sarah-p", visibility: "shared", capture_type: "Spotlight meeting",
+      transcript: "Colombel — tight control paradigm aligns with GSK messaging. Suggested joint publication on treat-to-target.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T15:30:00", attached_kols: ["jean-frederic-colombel"] },
+    { id: "n-101", type: "text", author: "emily-c", visibility: "shared", capture_type: "General",
+      text: "Final day — client debrief scheduled 5pm. Export capture digest requested.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T14:00:00" },
+    { id: "p-415", type: "photo", author: "maria-r", visibility: "shared", capture_type: "Session reaction",
+      caption: "Closing plenary hall — ESSENCE fibrosis data referenced again in wrap-up.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T12:45:00", attached_abstracts: ["plen-12"] },
+    { id: "n-102", type: "text", author: "david-p", visibility: "private", capture_type: "Hallway",
+      text: "Personal note: schedule follow-up with Chen advisory board for Q3.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T11:00:00", attached_kols: ["sarah-chen"] },
+    { id: "v-228", type: "voice", duration: "1:33", author: "james-w", visibility: "shared", capture_type: "Session reaction",
+      transcript: "Post-congress sentiment: IL-23 class winners unclear — durability and biomarkers dominate hallway talk.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T10:30:00", attached_topics: ["il-23"] },
+    { id: "n-103", type: "text", author: "sarah-p", visibility: "shared", capture_type: "General",
+      text: "47 captures logged team-wide for DDW Day 1–4. Digest export queued.",
+      congress: "ddw-2026", day: 4, timestamp: "2026-05-06T09:00:00" }
+  ];
+  DATA.captures = base;
+  const now = Date.now();
+  DATA.captures.slice(0, 6).forEach((c, i) => {
+    c.timestamp = new Date(now - (i + 1) * 8 * 60000).toISOString();
+  });
+}
+seedCaptures();
 
 // De-duplicate abstracts by id
 (function() {
@@ -305,6 +441,7 @@ let APP_STATE = {
 function setupKey(clientId) { return `client-${clientId}-setup`; }
 function readyBannerKey(clientId) { return `client-${clientId}-ready-shown`; }
 function defaultWorkspaceKey() { return 'user-default-workspace'; }
+function competitiveTagsKey(clientId) { return `client-${clientId}-competitive-tags`; }
 
 function getClient(clientId) {
   return DATA.clients.find(c => c.id === clientId) || DATA.clients[0];
@@ -359,6 +496,27 @@ function checklistStatus(clientId) {
     keywords: setup.keywords.length > 0,
     weights: true
   };
+}
+
+function getCompetitiveTags(clientId) {
+  const raw = localStorage.getItem(competitiveTagsKey(clientId));
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        kolIds: Array.isArray(parsed.kolIds) ? parsed.kolIds : [],
+        abstractIds: Array.isArray(parsed.abstractIds) ? parsed.abstractIds : []
+      };
+    } catch (e) {}
+  }
+  return { kolIds: [], abstractIds: [] };
+}
+
+function saveCompetitiveTags(clientId, tags) {
+  localStorage.setItem(competitiveTagsKey(clientId), JSON.stringify({
+    kolIds: Array.from(new Set(tags.kolIds || [])),
+    abstractIds: Array.from(new Set(tags.abstractIds || []))
+  }));
 }
 
 // ==========================================================
@@ -427,6 +585,177 @@ function matchChip(match) {
 
 function getKol(id) { return DATA.kols.find(k => k.id === id); }
 function getAbstract(id) { return DATA.abstracts.find(a => a.id === id); }
+function getTeamMember(id) { return DATA.team.find(t => t.id === id); }
+function getCapture(id) { return DATA.captures.find(c => c.id === id); }
+
+function capturesStorageKey() { return 'prototype-captures-v1'; }
+
+function loadCaptures() {
+  const raw = localStorage.getItem(capturesStorageKey());
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved)) return;
+    const ids = new Set(DATA.captures.map(c => c.id));
+    saved.forEach(c => { if (c.id && !ids.has(c.id)) { DATA.captures.unshift(c); ids.add(c.id); } });
+  } catch (e) {}
+}
+
+function persistCaptures() {
+  const userCreated = DATA.captures.filter(c => c.userCreated);
+  localStorage.setItem(capturesStorageKey(), JSON.stringify(userCreated));
+}
+
+function formatTimeAgo(iso) {
+  if (!iso) return 'just now';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function captureTypeIcon(type) {
+  if (type === 'voice') return '🎙';
+  if (type === 'photo') return '📷';
+  return '✍';
+}
+
+function captureBodyPreview(c, maxLen = 120) {
+  const raw = c.transcript || c.text || c.caption || '';
+  if (raw.length <= maxLen) return raw;
+  return raw.slice(0, maxLen) + '…';
+}
+
+function getCapturesForCongress(congressId, filters = {}) {
+  const viewerId = CURRENT_USER_ID;
+  let list = DATA.captures.filter(c => c.congress === congressId);
+  list = list.filter(c => c.visibility === 'shared' || c.author === viewerId);
+  if (filters.type && filters.type !== 'all') list = list.filter(c => c.type === filters.type);
+  if (filters.visibility === 'mine') list = list.filter(c => c.author === viewerId);
+  if (filters.visibility === 'shared') list = list.filter(c => c.visibility === 'shared');
+  if (filters.author && filters.author !== 'all') list = list.filter(c => c.author === filters.author);
+  if (filters.capture_type && filters.capture_type !== 'all') {
+    list = list.filter(c => (c.capture_type || '').toLowerCase().includes(filters.capture_type.toLowerCase()));
+  }
+  if (filters.day && filters.day !== 'all') list = list.filter(c => String(c.day) === String(filters.day));
+  if (filters.kolId) list = list.filter(c => (c.attached_kols || []).includes(filters.kolId));
+  if (filters.abstractId) {
+    list = list.filter(c => (c.attached_abstracts || []).includes(filters.abstractId));
+  }
+  if (filters.topicSlug) {
+    const slug = (filters.topicSlug || '').toLowerCase();
+    list = list.filter(c => (c.attached_topics || []).some(t => t.toLowerCase().includes(slug) || slug.includes(t.toLowerCase())));
+  }
+  list.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+  return list;
+}
+
+function getCapturesForKol(kolId) {
+  return getCapturesForCongress(APP_STATE.activeCongressId || 'ddw-2026')
+    .filter(c => (c.attached_kols || []).includes(kolId));
+}
+
+function getCapturesForAbstract(abstractId) {
+  const a = getAbstract(abstractId);
+  const byAbstract = getCapturesForCongress(APP_STATE.activeCongressId || 'ddw-2026')
+    .filter(c => (c.attached_abstracts || []).includes(abstractId));
+  const byAuthor = a && a.authorId
+    ? getCapturesForCongress(APP_STATE.activeCongressId || 'ddw-2026')
+      .filter(c => (c.attached_kols || []).includes(a.authorId) && !byAbstract.find(x => x.id === c.id))
+    : [];
+  return [...byAbstract, ...byAuthor].sort((x, y) => new Date(y.timestamp) - new Date(x.timestamp));
+}
+
+function getCapturesForTopic(topicSlug) {
+  return getCapturesForCongress(APP_STATE.activeCongressId || 'ddw-2026', { topicSlug });
+}
+
+function capturesLastHourCount(congressId) {
+  const hourAgo = Date.now() - 3600000;
+  return DATA.captures.filter(c =>
+    c.congress === congressId &&
+    (c.visibility === 'shared' || c.author === CURRENT_USER_ID) &&
+    new Date(c.timestamp || 0).getTime() > hourAgo
+  ).length;
+}
+
+function groupCapturesByDay(captures) {
+  const groups = {};
+  captures.forEach(c => {
+    const d = c.day || 1;
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(c);
+  });
+  return Object.keys(groups).sort((a, b) => Number(b) - Number(a)).map(day => ({
+    day: Number(day),
+    label: CAPTURE_DAY_LABELS[day] || `Day ${day}`,
+    captures: groups[day]
+  }));
+}
+
+function relatedCaptures(capture, limit = 3) {
+  if (!capture) return [];
+  const tags = new Set([
+    ...(capture.attached_kols || []),
+    ...(capture.attached_abstracts || []),
+    ...(capture.attached_topics || [])
+  ]);
+  return DATA.captures.filter(c =>
+    c.id !== capture.id &&
+    c.congress === capture.congress &&
+    (c.visibility === 'shared' || c.author === CURRENT_USER_ID) &&
+    [...(c.attached_kols || []), ...(c.attached_abstracts || []), ...(c.attached_topics || [])].some(t => tags.has(t))
+  ).slice(0, limit);
+}
+
+function renderCaptureTags(c) {
+  const parts = [];
+  (c.attached_kols || []).forEach(id => {
+    const k = getKol(id);
+    if (k) parts.push(`<span class="chip line"><span class="av xs">${k.initials}</span> ${k.name}</span>`);
+  });
+  (c.attached_abstracts || []).forEach(id => {
+    const a = getAbstract(id);
+    if (a) parts.push(`<span class="chip soft">${a.id.toUpperCase()}</span>`);
+  });
+  (c.attached_topics || []).forEach(t => parts.push(`<span class="chip soft">${t}</span>`));
+  if (c.capture_type) parts.push(`<span class="chip soft">${c.capture_type}</span>`);
+  return parts.join(' ');
+}
+
+function renderCaptureCard(c, opts = {}) {
+  const compact = opts.compact;
+  const member = getTeamMember(c.author) || { initials: '??', name: 'Unknown' };
+  const visClass = c.visibility === 'private' ? 'private' : 'shared';
+  const body = captureBodyPreview(c, compact ? 100 : 120);
+  const href = `#/captures/${c.id}`;
+  const typeLine = c.type === 'voice'
+    ? `${captureTypeIcon(c.type)} Voice · ${c.duration || '1:00'}`
+    : `${captureTypeIcon(c.type)} ${c.type === 'photo' ? 'Photo' : 'Note'}`;
+  const photoBlock = c.type === 'photo'
+    ? `<div class="cap-photo"><div class="cap-photo-ph">📷</div></div>`
+    : '';
+  const wave = c.type === 'voice' && !compact
+    ? `<div class="waveform"><svg viewBox="0 0 200 30" preserveAspectRatio="none"><path d="M0,15 Q25,5 50,15 T100,15 T150,20 T200,10" fill="none" stroke="var(--teal)" stroke-width="2"/></svg></div>`
+    : '';
+  return `<a class="cap-card ${c.type} ${visClass}${compact ? ' compact' : ''}${c._new ? ' new' : ''}" href="${href}">
+    <div class="cap-hd">
+      <div class="av sm">${member.initials}</div>
+      <div class="cap-meta"><b>${member.name}</b> <small>· ${formatTimeAgo(c.timestamp)} · ${typeLine}</small></div>
+      <span class="vis-pill ${visClass}"><span class="d"></span> ${c.visibility === 'private' ? 'PRIVATE' : 'SHARED'}</span>
+    </div>
+    <div class="cap-body${c.type === 'photo' ? ' photo-body' : ''}">
+      ${photoBlock}
+      ${wave}
+      <p>${body ? `"${body}"` : ''}${!compact && body.length >= 100 ? ' <span class="more">Read more →</span>' : ''}</p>
+    </div>
+    <div class="cap-tags">${renderCaptureTags(c)}</div>
+  </a>`;
+}
 
 function cmarkClass(acronym) {
   const map = {
@@ -451,6 +780,8 @@ function metricIcon(emoji, color) {
 // ==========================================================
 function route() {
   destroyCharts();
+  stopCaptureDripFeed();
+  removeCaptureFab();
   const h = location.hash || '#/dashboard';
   const page = document.getElementById('page');
   page.scrollTop = 0;
@@ -462,9 +793,12 @@ function route() {
   const askMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/ask$/);
   const meetingMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/meeting-list$/);
   const topicMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/topics\/([^/]+)$/);
+  const competitiveMatch = hashOnly.match(/^#\/clients\/([^/]+)\/competitive$/);
   const kolsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/kols$/);
   const settingsMatch = hashOnly.match(/^#\/clients\/([^/]+)\/settings\/prioritization$/);
   const newCongressMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/new$/);
+  const capturesMatch = hashOnly.match(/^#\/clients\/([^/]+)\/congresses\/([^/]+)\/captures$/);
+  const captureDetailMatch = hashOnly.match(/^#\/captures\/([^/]+)$/);
 
   if (h === '#/dashboard' || h === '#/' || h === '') {
     renderDashboard(); highlightNav('dashboard');
@@ -479,6 +813,20 @@ function route() {
     APP_STATE.activeClientId = feedMatch[1];
     APP_STATE.activeCongressId = feedMatch[2];
     renderIntelFeed(); highlightNav('feed');
+  } else if (capturesMatch) {
+    APP_STATE.activeClientId = capturesMatch[1];
+    APP_STATE.activeCongressId = capturesMatch[2];
+    renderCaptureStream(); highlightNav('captures');
+  } else if (captureDetailMatch) {
+    const cap = getCapture(captureDetailMatch[1]);
+    if (cap) {
+      const cong = DATA.congresses.find(c => c.id === cap.congress);
+      if (cong) {
+        APP_STATE.activeClientId = cong.client;
+        APP_STATE.activeCongressId = cong.id;
+      }
+    }
+    renderCaptureDetail(captureDetailMatch[1]); highlightNav('captures');
   } else if (askMatch) {
     APP_STATE.activeClientId = askMatch[1];
     APP_STATE.activeCongressId = askMatch[2];
@@ -491,6 +839,9 @@ function route() {
     APP_STATE.activeClientId = topicMatch[1];
     APP_STATE.activeCongressId = topicMatch[2];
     renderTopicLandscape(topicMatch[3]); highlightNav('topic');
+  } else if (competitiveMatch) {
+    APP_STATE.activeClientId = competitiveMatch[1];
+    renderCompetitiveWorkspace(); highlightNav('competitive');
   } else if (kolsMatch) {
     APP_STATE.activeClientId = kolsMatch[1];
     renderKolDirectory(); highlightNav('kols');
@@ -512,6 +863,8 @@ function route() {
     renderDashboard(); highlightNav('dashboard');
   }
   syncShellContext();
+  if (isCongressScoped()) mountCaptureFab();
+  if (qParams.get('capture') === 'new') setTimeout(() => openCapture(), 100);
 }
 
 function highlightNav(key) {
@@ -529,9 +882,14 @@ function syncShellContext() {
   if (cEl) cEl.textContent = `${cName} Workspace`;
 
   const topbarCongress = document.querySelector('.tb-congress');
+  const congressActive = congress && congress.status === 'active';
+  const liveLink = isCongressScoped() && congressActive
+    ? `<span class="tb-live" onclick="event.stopPropagation();location.hash='#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/captures'" title="Capture stream">LIVE</span>`
+    : '';
   if (topbarCongress) {
-    topbarCongress.innerHTML = `<span class="dot"></span> ${congress.acronym} 2026 <span class="chev">▾</span>`;
+    topbarCongress.innerHTML = `<span class="dot"></span> ${congress.acronym} 2026 ${liveLink} <span class="chev">▾</span>`;
     topbarCongress.onclick = (e) => {
+      if (e.target.closest('.tb-live')) return;
       e.stopPropagation();
       toggleWorkspaceSwitcher();
     };
@@ -562,7 +920,9 @@ function renderSidebar() {
   const configured = isRequiredSetupComplete(client.id);
   const disabledClass = configured ? '' : ' nav-item-dis';
   const disabledClick = configured ? '' : `onclick="event.preventDefault();showToast('Complete required setup items to unlock this module')"`; 
-  const isActiveClientRoute = ['client', 'congress', 'feed', 'kols', 'settings', 'ask', 'meeting', 'topic'].includes(APP_STATE.activeNavKey);
+  const isActiveClientRoute = ['client', 'congress', 'feed', 'kols', 'settings', 'ask', 'meeting', 'topic', 'competitive', 'captures'].includes(APP_STATE.activeNavKey);
+  const recentCapCount = capturesLastHourCount(congress.id);
+  const liveNavDot = congress.status === 'active' ? '<span class="nav-live-dot"></span>' : '';
 
   const clientItems = DATA.clients.map(c => {
     const cConfigured = isRequiredSetupComplete(c.id);
@@ -614,6 +974,9 @@ function renderSidebar() {
     <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'feed') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/feed" ${disabledClick}>
       <span class="nav-icon">☰</span>Intel Feed <span class="nav-badge">312</span>
     </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'captures') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/captures" ${disabledClick}>
+      <span class="nav-icon">◉</span>Capture Stream ${liveNavDot}${recentCapCount ? `<span class="nav-badge">${recentCapCount}</span>` : ''}
+    </a>
     <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'ask') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/congresses/${congress.id}/ask" ${disabledClick}>
       <span class="nav-icon">✦</span>Ask Anything
     </a>
@@ -625,6 +988,9 @@ function renderSidebar() {
     </a>
     <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'kols') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/kols" ${disabledClick}>
       <span class="nav-icon">⊛</span>KOL Directory
+    </a>
+    <a class="nav-item module-item ${(APP_STATE.activeNavKey === 'competitive') ? 'act' : ''}${disabledClass}" href="#/clients/${client.id}/competitive" ${disabledClick}>
+      <span class="nav-icon">◍</span>Competitive
     </a>
 
     <div class="nav-label">Configuration</div>
@@ -810,7 +1176,7 @@ function renderDashboard() {
       <a class="qa" href="#/clients/${APP_STATE.activeClientId}/settings/prioritization">
         <div class="qi">★</div><b>View Prioritization</b><small>AI-ranked opportunities</small>
       </a>
-      <a class="qa" onclick="showToast('✓ Capture feature coming soon — use the KOL Dossier to add field notes'); return false" href="#">
+      <a class="qa" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/captures?capture=new">
         <div class="qi">●</div><b>Add Capture</b><small>Voice, photo, or note</small>
       </a>
     </div>
@@ -902,6 +1268,7 @@ function renderClientWorkspace(clientId = APP_STATE.activeClientId, drawerId = n
       <a class="tab act">Overview</a>
       <a class="tab" href="${congressPath}">Congresses</a>
       <a class="tab" href="#/clients/${clientId}/kols">KOLs</a>
+      <a class="tab" href="#/clients/${clientId}/competitive">Competitive</a>
       <a class="tab" onclick="showTabStub(this,'Insights')">Insights</a>
       <a class="tab" onclick="showTabStub(this,'Reports')">Reports</a>
       <a class="tab" onclick="showTabStub(this,'Documents')">Documents</a>
@@ -988,7 +1355,7 @@ function renderCongressDashboard() {
       <div class="hd-actions">
         <button class="btn-secondary" onclick="showToast('Sharing link copied to clipboard')">⤴ Share</button>
         <button class="btn-secondary" onclick="location.hash='#/clients/gsk/congresses/new'">⬆ Upload / Ingest</button>
-        <button class="btn-primary" onclick="showToast('✓ Capture added to DDW 2026')">＋ Capture Insight</button>
+        <button class="btn-primary" onclick="openCapture()">＋ Capture Insight</button>
       </div>
     </div>
 
@@ -1105,6 +1472,168 @@ function renderCongressDashboard() {
             <div class="bd-row"><b>Basic Science</b><div class="bar"><i style="width:14%;background:#48607A"></i></div><span>6</span></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">Recent Insights <a class="more" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/captures">VIEW ALL ›</a></div>
+      <div class="panel-b capture-embed-list">${renderRecentCapturesPanel(3)}</div>
+    </div>
+  `);
+}
+
+function autoCompetitiveAbstractIds(clientId = APP_STATE.activeClientId) {
+  const setup = getSetup(clientId);
+  const competitorDrugs = (setup.competitorDrugs || []).map(d => String(d).toLowerCase());
+  return DATA.abstracts.filter(a => {
+    if (a.signal === 'competitive') return true;
+    const drugs = (a.drugs || []).map(d => String(d).toLowerCase());
+    return drugs.some(d => competitorDrugs.includes(d));
+  }).map(a => a.id);
+}
+
+function autoCompetitiveKolIds(clientId = APP_STATE.activeClientId) {
+  const abstractIdSet = new Set(autoCompetitiveAbstractIds(clientId));
+  return DATA.abstracts
+    .filter(a => abstractIdSet.has(a.id))
+    .map(a => a.authorId)
+    .filter(Boolean);
+}
+
+function isAbstractCompetitiveTagged(abstractId, clientId = APP_STATE.activeClientId) {
+  const tags = getCompetitiveTags(clientId);
+  const autoSet = new Set(autoCompetitiveAbstractIds(clientId));
+  return autoSet.has(abstractId) || tags.abstractIds.includes(abstractId);
+}
+
+function isKolCompetitiveTagged(kolId, clientId = APP_STATE.activeClientId) {
+  const tags = getCompetitiveTags(clientId);
+  const autoSet = new Set(autoCompetitiveKolIds(clientId));
+  return autoSet.has(kolId) || tags.kolIds.includes(kolId);
+}
+
+function toggleKolCompetitiveTag(kolId) {
+  const clientId = APP_STATE.activeClientId;
+  const tags = getCompetitiveTags(clientId);
+  if (tags.kolIds.includes(kolId)) {
+    tags.kolIds = tags.kolIds.filter(id => id !== kolId);
+    showToast('KOL removed from competitive tags');
+  } else {
+    tags.kolIds.push(kolId);
+    showToast('KOL tagged as competitive');
+  }
+  saveCompetitiveTags(clientId, tags);
+  route();
+}
+
+function toggleAbstractCompetitiveTag(abstractId) {
+  const clientId = APP_STATE.activeClientId;
+  const tags = getCompetitiveTags(clientId);
+  if (tags.abstractIds.includes(abstractId)) {
+    tags.abstractIds = tags.abstractIds.filter(id => id !== abstractId);
+    showToast('Abstract removed from competitive tags');
+  } else {
+    tags.abstractIds.push(abstractId);
+    showToast('Abstract tagged as competitive');
+  }
+  saveCompetitiveTags(clientId, tags);
+  route();
+}
+
+function renderCompetitiveWorkspace(clientId = APP_STATE.activeClientId) {
+  const client = getClient(clientId);
+  const setup = getSetup(clientId);
+  const tags = getCompetitiveTags(clientId);
+
+  const autoAbs = new Set(autoCompetitiveAbstractIds(clientId));
+  const autoKols = new Set(autoCompetitiveKolIds(clientId));
+
+  const taggedAbstracts = DATA.abstracts.filter(a => autoAbs.has(a.id) || tags.abstractIds.includes(a.id));
+  const taggedKols = DATA.kols.filter(k => autoKols.has(k.id) || tags.kolIds.includes(k.id));
+
+  const kolRows = taggedKols.slice(0, 10).map(k => `
+    <tr>
+      <td><b>${k.name}</b><br><small>${k.affiliation}</small></td>
+      <td>${k.focus.slice(0,2).map(f => `<span class="chip line" style="margin:2px">${f}</span>`).join('')}</td>
+      <td>${autoKols.has(k.id) ? '<span class="chip soft xs">Auto</span>' : '<span class="chip line xs">Manual</span>'}</td>
+      <td><button class="btn-secondary sm" onclick="toggleKolCompetitiveTag('${k.id}')">${tags.kolIds.includes(k.id) ? 'Untag' : 'Tag'}</button></td>
+    </tr>
+  `).join('');
+
+  const abstractCards = taggedAbstracts.slice(0, 8).map(a => `
+    <a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}">
+      <div class="acard-body">
+        <div class="acard-chips">
+          <span class="chip comp">COMPETITIVE</span>
+          ${chipBySession(a.session)}
+          <span class="chip soft xs">${a.topic}</span>
+          ${autoAbs.has(a.id) ? '<span class="chip soft xs">Auto</span>' : '<span class="chip line xs">Manual</span>'}
+        </div>
+        <div class="acard-title">${a.title}</div>
+        <div class="acard-meta">${a.author} · ${a.affiliation}</div>
+      </div>
+      <div class="acard-score-col">
+        <div class="acard-priority-label">Priority</div>
+        ${scoreRing(a.priority, '#B45309')}
+        <div class="acard-acts">
+          <button title="Toggle tag" onclick="event.preventDefault();event.stopPropagation();toggleAbstractCompetitiveTag('${a.id}')">${tags.abstractIds.includes(a.id) ? '−' : '+'}</button>
+        </div>
+      </div>
+    </a>
+  `).join('');
+
+  setPage(`
+    <div class="crumb">Client Workspaces › <b>${client.name}</b> › Competitive</div>
+    <div class="ph">
+      <div class="eyebrow">${client.name} workspace</div>
+      <h2>Competitive Intelligence</h2>
+      <p>Tag competitor-relevant KOLs and abstracts to sharpen meeting prep and narrative tracking.</p>
+      <div class="ph-actions">
+        <button class="btn-secondary" onclick="openDrawer('${clientId}','competitors')">Configure competitors</button>
+        <a class="btn-primary" href="#/clients/${clientId}/congresses/${APP_STATE.activeCongressId}/feed">Review Intel Feed</a>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <a class="tab" href="#/clients/${clientId}">Overview</a>
+      <a class="tab" href="#/clients/${clientId}/kols">KOLs</a>
+      <a class="tab act">Competitive</a>
+    </nav>
+
+    <div class="metrics">
+      <div class="metric"><div class="lab">Competitor Companies</div><div class="num">${setup.competitorCompanies.length}</div></div>
+      <div class="metric"><div class="lab">Competitor Drugs</div><div class="num">${setup.competitorDrugs.length}</div></div>
+      <div class="metric"><div class="lab">Tagged KOLs</div><div class="num">${taggedKols.length}</div></div>
+      <div class="metric"><div class="lab">Tagged Abstracts</div><div class="num">${taggedAbstracts.length}</div></div>
+    </div>
+
+    <div class="cols-2" style="align-items:start">
+      <div class="panel">
+        <div class="panel-h">Competitor Registry</div>
+        <div class="panel-b">
+          <div class="comp-list">
+            <h4>Companies</h4>
+            <div>${(setup.competitorCompanies || []).map(c => `<span class="chip comp" style="margin:2px">${c}</span>`).join('') || '<span class="muted">No competitor companies configured</span>'}</div>
+            <h4 style="margin-top:10px">Drugs</h4>
+            <div>${(setup.competitorDrugs || []).map(d => `<span class="chip line" style="margin:2px">${d}</span>`).join('') || '<span class="muted">No competitor drugs configured</span>'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h">Competitive KOLs</div>
+        <div class="panel-b" style="padding:0">
+          <table class="kol-table">
+            <thead><tr><th>KOL</th><th>Focus</th><th>Source</th><th></th></tr></thead>
+            <tbody>${kolRows || '<tr><td colspan="4"><div class="empty"><h3>No tagged KOLs yet</h3><p>Tag KOLs from the KOL Directory or inferred abstract activity.</p></div></td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h">Competitive Abstracts</div>
+      <div class="panel-b">
+        <div class="acards">${abstractCards || '<div class="empty"><h3>No competitive abstracts yet</h3><p>Use feed tagging once competitor assets are configured.</p></div>'}</div>
       </div>
     </div>
   `);
@@ -1226,6 +1755,7 @@ function renderFeedCards() {
 
   el.innerHTML = results.map(a => {
     const kol = getKol(a.authorId);
+    const isCompetitive = isAbstractCompetitiveTagged(a.id);
     const kolLink = kol
       ? `<span class="acard-author-link" role="link" tabindex="0" onclick="event.preventDefault();event.stopPropagation();location.hash='#/kols/${kol.id}'" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();location.hash='#/kols/${kol.id}'}">${a.author}</span>`
       : `<span class="acard-author">${a.author}</span>`;
@@ -1239,7 +1769,7 @@ function renderFeedCards() {
     return `<a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}">
       <div class="acard-body">
         <div class="acard-chips">
-          ${chipBySignal(a.signal)}
+          ${isCompetitive ? '<span class="chip comp">COMPETITIVE</span>' : chipBySignal(a.signal)}
           ${chipBySession(a.session)}
           <span class="chip soft xs">${a.topic}</span>
         </div>
@@ -1261,6 +1791,7 @@ function renderFeedCards() {
         <div class="acard-acts">
           <button title="Save" onclick="event.preventDefault();event.stopPropagation();showToast('Saved to your list')">☆</button>
           <button title="Add" onclick="event.preventDefault();event.stopPropagation();showToast('Added to meeting list')">+</button>
+          <button title="Tag competitive" onclick="event.preventDefault();event.stopPropagation();toggleAbstractCompetitiveTag('${a.id}')">${isCompetitive ? '◉' : '○'}</button>
         </div>
       </div>
     </a>`;
@@ -1315,6 +1846,7 @@ function renderAbstractDetail(id) {
   }
 
   const kol = getKol(a.authorId);
+  const isCompetitive = isAbstractCompetitiveTagged(a.id);
   const related = (a.relatedIds || []).map(rid => getAbstract(rid)).filter(Boolean).slice(0, 3);
 
   const drugList = (a.drugs || []).map(d => {
@@ -1350,7 +1882,7 @@ function renderAbstractDetail(id) {
 
     <div class="abstract-hd">
       <div class="top">
-        ${chipBySignal(a.signal)}
+        ${isCompetitive ? '<span class="chip comp">COMPETITIVE</span>' : chipBySignal(a.signal)}
         ${chipBySession(a.session)}
         <span class="chip soft">${a.topic}</span>
       </div>
@@ -1361,6 +1893,7 @@ function renderAbstractDetail(id) {
       </div>
       <div class="hd-actions">
         <button class="btn-primary" onclick="showToast('✓ Added to meeting list')">＋ Add to meeting list</button>
+        <button class="btn-secondary" onclick="toggleAbstractCompetitiveTag('${a.id}')">${isCompetitive ? '◉ Tagged competitive' : '○ Tag as competitive'}</button>
         <button class="btn-secondary" onclick="showToast('★ Marked as high priority')">★ Mark priority</button>
         <button class="btn-secondary" onclick="showToast('☆ Saved to your list')">☆ Save</button>
         ${scoreRing(a.priority, scoreRingColor(a.signal))}
@@ -1372,6 +1905,12 @@ function renderAbstractDetail(id) {
         <div class="ai-summary">
           <div class="ai-lab">AI-GENERATED SUMMARY</div>
           <p>${a.aiSummary || 'Summary not available.'}</p>
+        </div>
+        <div class="panel" style="margin:16px 0">
+          <div class="panel-h">Field reactions
+            <button class="btn-secondary sm" style="margin-left:auto" onclick="openCapture('text')">＋ New capture about this abstract</button>
+          </div>
+          <div class="panel-b">${renderAbstractFieldReactions(a.id)}</div>
         </div>
         ${a.background ? `<section><h3>Background</h3><p>${a.background}</p></section>` : ''}
         ${a.methods ? `<section><h3>Methods</h3><p>${a.methods}</p></section>` : ''}
@@ -1515,6 +2054,7 @@ function renderKolRows() {
           <div>
             <b>${k.name}</b> ${matchChip(k.match)}<br>
             <small>${k.credentials} · ${k.city}</small>
+            ${isKolCompetitiveTagged(k.id) ? '<br><span class="chip comp xs">COMPETITIVE</span>' : ''}
           </div>
         </div>
       </td>
@@ -1530,7 +2070,10 @@ function renderKolRows() {
         <div class="influence ${influenceClass(k.influence)}"><b>${k.influence}</b><small>${k.influence >= 90 ? 'Very High' : k.influence >= 80 ? 'High' : 'Moderate'}</small></div>
         <small class="mono">${k.pubs} pubs · ${k.citations.toLocaleString()} citations</small>
       </td>
-      <td><button class="row-add" title="Add to meeting list" onclick="event.stopPropagation();showToast('✓ ${k.name} added to meeting list')">+</button></td>
+      <td>
+        <button class="row-add" title="Add to meeting list" onclick="event.stopPropagation();showToast('✓ ${k.name} added to meeting list')">+</button>
+        <button class="row-add" title="Toggle competitive tag" onclick="event.stopPropagation();toggleKolCompetitiveTag('${k.id}')">${isKolCompetitiveTagged(k.id) ? '◉' : '○'}</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -1548,6 +2091,7 @@ function clearKolSearch() {
 // ==========================================================
 function renderKolDossier(id) {
   const kol = getKol(id) || getKol('sarah-chen');
+  const isCompetitive = isKolCompetitiveTagged(kol.id);
 
   // Publication bar chart data
   const pubYears = [2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
@@ -1580,11 +2124,15 @@ function renderKolDossier(id) {
         <div class="inst">${kol.affiliation} · ${kol.city}</div>
         <div class="tags">
           <span class="tag"><span class="dot"></span>Tier ${kol.tier} KOL</span>
+          ${isCompetitive ? '<span class="tag">Competitive</span>' : ''}
           <span class="tag">Sentiment: ${kol.sentiment}</span>
           ${kol.focus.slice(0,2).map(f => `<span class="tag">${f}</span>`).join('')}
         </div>
       </div>
-      <button class="addbtn" onclick="showToast('✓ ${kol.name.replace(/'/g,"\\'")} added to meeting list')">+ Add to meeting list</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-secondary" onclick="toggleKolCompetitiveTag('${kol.id}')">${isCompetitive ? '◉ Competitive tagged' : '○ Tag competitive'}</button>
+        <button class="addbtn" onclick="showToast('✓ ${kol.name.replace(/'/g,"\\'")} added to meeting list')">+ Add to meeting list</button>
+      </div>
     </div>
 
     <div class="cols-2">
@@ -1593,22 +2141,10 @@ function renderKolDossier(id) {
         <div class="panel-b" style="padding:4px 16px">${slots}</div>
       </div>
       <div class="panel">
-        <div class="panel-h">Field notes & history</div>
-        <div class="panel-b">
-          <div class="note">
-            <div class="nh"><b>DDW 2025 · hallway debrief</b><small>MAY 2025</small></div>
-            <p>Cautiously optimistic on IL-23 selectivity but flagged the lack of head-to-head data as the key gap before guideline adoption.</p>
-            <div class="src">🎙 Voice note · 2:14</div>
-          </div>
-          <div class="note">
-            <div class="nh"><b>Advisory board</b><small>MAR 2025</small></div>
-            <p>Strong advocate for transmural healing as a regulatory endpoint. Open to pipeline discussion. Expressed interest in real-world evidence programs.</p>
-          </div>
-          <div class="note">
-            <div class="nh"><b>ECCO 2025 · post-session notes</b><small>FEB 2025</small></div>
-            <p>Very engaged in histologic remission debate. Would be a strong voice for a future advisory board on mucosal healing endpoints.</p>
-            <div class="src">✍ Written brief</div>
-          </div>
+        <div class="panel-h">Field notes & history
+          <button class="btn-secondary sm" onclick="openCapture('voice')">＋ New capture about this KOL</button>
+        </div>
+        <div class="panel-b">${renderKolCaptureNotes(kol.id)}
           <div style="margin-top:10px"><span class="chip line">★ Recommended follow-up</span></div>
         </div>
       </div>
@@ -2430,12 +2966,23 @@ function confirmExport(type) {
 // ==========================================================
 function renderAskAnything(query) {
   const q = query || 'Which KOLs discussed fibrosis regression as a regulatory endpoint?';
+  const capSources = DATA.captures
+    .filter(c => c.congress === APP_STATE.activeCongressId && (c.visibility === 'shared' || c.author === CURRENT_USER_ID))
+    .filter(c => (c.transcript || c.text || '').toLowerCase().includes('fibrosis') || (c.transcript || c.text || '').toLowerCase().includes('transmural') || c.id === 'v-217')
+    .slice(0, 2);
+  const captureDocs = capSources.map(c => {
+    const icon = c.type === 'voice' ? 'VOX' : c.type === 'photo' ? 'IMG' : 'NOTE';
+    const cls = c.type === 'voice' ? 'ppt' : c.type === 'photo' ? 'xls' : 'pdf';
+    const title = c.capture_type || 'Onsite capture';
+    const sub = `${captureTypeIcon(c.type)} ${formatTimeAgo(c.timestamp)} · DDW 2026`;
+    return `<a class="doc src-card" href="#/captures/${c.id}"><div class="dic ${cls}">${icon}</div><div><b>${title}</b><small>${sub}</small></div></a>`;
+  }).join('');
   setPage(`<div class="ph"><div class="eyebrow">Synthesis · Retrieval</div><h2>Ask anything</h2><p>Conversational retrieval grounded in DDW 2026 intelligence.</p></div>
     <div class="cols"><div class="panel"><div class="panel-b"><div class="search-big"><span class="ic">✦</span><input id="ask-query" value="${q.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter'){runAsk()}"><button class="btn-primary sm" onclick="runAsk()">Ask →</button></div>
-      <div class="feed-chips" style="margin-top:8px"><span class="chip soft" onclick="askPreset('Which KOLs discussed fibrosis regression?')">Which KOLs discussed fibrosis regression?</span><span class="chip soft" onclick="askPreset('What changed since DDW 2025?')">What changed since DDW 2025?</span><span class="chip soft" onclick="askPreset('Major competitor themes?')">Major competitor themes?</span></div>
+      <div class="feed-chips" style="margin-top:8px"><span class="chip soft" onclick="askPreset('Which KOLs discussed fibrosis regression?')">Which KOLs discussed fibrosis regression?</span><span class="chip soft" onclick="askPreset('What changed since DDW 2025?')">What changed since DDW 2025?</span><span class="chip soft" onclick="askPreset('Show all captures on IL-23 inhibitors')">Show all captures on IL-23 inhibitors</span></div>
       <div class="note-box" style="margin-top:10px"><b>Q:</b> <span id="ask-q">${q}</span></div><div id="ask-answer" style="margin-top:10px;line-height:1.6;color:var(--ink)"></div>
       <div class="sec-title" style="margin-top:14px">Sources <span class="ln"></span></div>
-      <div class="docs"><a class="doc" href="#/abstracts/plen-12"><div class="dic pdf">ABS</div><div><b>ESSENCE plenary abstract</b><small>NCT05012254 · DDW 2026</small></div></a><a class="doc" href="#/kols/sarah-chen"><div class="dic ppt">KOL</div><div><b>Dr. Sarah Chen dossier</b><small>Voice note + historical captures</small></div></a><a class="doc" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/feed"><div class="dic xls">FEED</div><div><b>Filtered Intel Feed evidence set</b><small>IL-23 + fibrosis mentions</small></div></a></div>
+      <div class="docs">${captureDocs}<a class="doc" href="#/abstracts/plen-12"><div class="dic pdf">ABS</div><div><b>ESSENCE plenary abstract</b><small>NCT05012254 · DDW 2026</small></div></a><a class="doc" href="#/kols/sarah-chen"><div class="dic ppt">KOL</div><div><b>Dr. Sarah Chen dossier</b><small>KOL profile + captures</small></div></a></div>
     </div></div>
     <div class="panel"><div class="panel-h">History</div><div class="panel-b"><div class="tl"><div class="tl-i"><b>Fibrosis regression endpoint</b><p>just now · 3 sources</p></div><div class="tl-i"><b>JAK safety RWD signals</b><p>1h ago · 7 sources</p></div><div class="tl-i"><b>IL-23 head-to-head status</b><p>3h ago · 4 sources</p></div><div class="tl-i"><b>Competitor symposium agenda</b><p>Yesterday · 12 sources</p></div></div></div></div></div>`);
   streamAskAnswer();
@@ -2494,7 +3041,586 @@ function renderTopicLandscape(topicSlug) {
     <div class="metrics"><div class="metric"><div class="lab">Abstracts in this topic</div><div class="num">41</div></div><div class="metric"><div class="lab">Late-breaking</div><div class="num">3</div></div><div class="metric"><div class="lab">Plenaries</div><div class="num">2</div></div><div class="metric"><div class="lab">Avg. priority</div><div class="num">82</div></div></div>
     <div class="cols"><div class="panel"><div class="panel-h">Synthesis <span class="chip own xs">AI-GENERATED</span></div><div class="panel-b">IL-23 positioning at DDW 2026 is dominated by head-to-head readouts and long-term durability data, with mounting pressure for class differentiation by selectivity. Competitive sentiment is positive on efficacy but skeptical on biomarker-guided selection and post-week-52 durability confidence.</div></div><div class="panel"><div class="panel-h">Evidence gaps</div><div class="panel-b"><div class="note"><b>No validated response biomarker</b><p>Current attempts remain exploratory.</p></div><div class="note"><b>Limited >52 week outcomes</b><p>Durability evidence still sparse across class.</p></div><div class="note"><b>No prospective H2H IL-23 vs IL-12/23 RCT</b><p>Comparative certainty remains constrained.</p></div></div></div></div>
     <div class="sec-title">Abstracts in this topic <span class="ln"></span></div><div class="acards">${topicAbstracts.map(a => `<a class="acard ${cardClass(a.signal)}" href="#/abstracts/${a.id}"><div class="acard-body"><div class="acard-chips">${chipBySignal(a.signal)} ${chipBySession(a.session)}</div><div class="acard-title">${a.title}</div><div class="acard-meta"><span>${a.author}</span><span class="acard-sep">·</span><span>${a.schedule}</span></div></div><div class="acard-score-col"><div class="acard-priority-label">Priority</div>${scoreRing(a.priority, scoreRingColor(a.signal))}</div></a>`).join('')}</div>
-    <div class="sec-title">KOLs presenting on this topic <span class="ln"></span></div><div class="feed-chips">${DATA.kols.slice(0,4).map(k => `<a class="chip line" href="#/kols/${k.id}">${k.name}</a>`).join('')}</div>`);
+    <div class="sec-title">KOLs presenting on this topic <span class="ln"></span></div><div class="feed-chips">${DATA.kols.slice(0,4).map(k => `<a class="chip line" href="#/kols/${k.id}">${k.name}</a>`).join('')}</div>
+    <div class="panel" style="margin-top:20px">
+      <div class="panel-h">What the team is capturing on this topic</div>
+      <div class="panel-b capture-embed-list">${getCapturesForTopic(topicSlug).slice(0, 5).map(c => renderCaptureCard(c, { compact: true })).join('') || '<p class="muted">No captures on this topic yet.</p>'}</div>
+    </div>`);
+  mountCaptureFab();
+}
+
+// ==========================================================
+// ONSITE CAPTURE LAYER
+// ==========================================================
+let CAPTURE_STATE = {
+  mode: 'voice',
+  context: {},
+  recording: false,
+  recordTimer: null,
+  recordSeconds: 0,
+  filters: { type: 'all', visibility: 'all', author: 'all', capture_type: 'all', day: 'all' },
+  dripIndex: 0,
+  lastStreamUpdate: Date.now()
+};
+let captureDripInterval = null;
+
+function isCongressScoped() {
+  const key = APP_STATE.activeNavKey;
+  if (['congress', 'feed', 'ask', 'meeting', 'topic', 'captures'].includes(key)) return true;
+  const h = (location.hash || '').split('?')[0];
+  if (h.startsWith('#/abstracts/') || h.startsWith('#/kols/')) return true;
+  return false;
+}
+
+function deriveCaptureContext() {
+  const h = (location.hash || '').split('?')[0];
+  const ctx = {
+    congress: APP_STATE.activeCongressId || 'ddw-2026',
+    kols: [],
+    abstracts: [],
+    topics: [],
+    capture_type: 'Hallway'
+  };
+  const kolM = h.match(/^#\/kols\/([^/]+)/);
+  const absM = h.match(/^#\/abstracts\/([^/]+)/);
+  const topicM = h.match(/\/topics\/([^/]+)$/);
+  if (kolM) {
+    ctx.kols = [kolM[1]];
+    ctx.capture_type = 'Spotlight meeting';
+  } else if (absM) {
+    const a = getAbstract(absM[1]);
+    ctx.abstracts = [absM[1]];
+    if (a && a.authorId) ctx.kols = [a.authorId];
+    if (a && a.topics && a.topics[0]) ctx.topics = [slugify(a.topics[0])];
+    ctx.capture_type = 'Session reaction';
+  } else if (topicM) {
+    ctx.topics = [decodeURIComponent(topicM[1])];
+    ctx.capture_type = 'Session reaction';
+  }
+  return ctx;
+}
+
+function mountCaptureFab() {
+  removeCaptureFab();
+  if (!isCongressScoped()) return;
+  const fab = document.createElement('button');
+  fab.className = 'fab-capture';
+  fab.setAttribute('aria-label', 'New capture');
+  fab.innerHTML = '＋';
+  fab.onclick = () => openCapture();
+  document.body.appendChild(fab);
+}
+
+function removeCaptureFab() {
+  document.querySelector('.fab-capture')?.remove();
+}
+
+function ensureCaptureModal() {
+  if (document.getElementById('modal-capture')) return;
+  const shell = document.createElement('div');
+  shell.className = 'overlay-modal capture-modal-shell';
+  shell.id = 'modal-capture';
+  shell.style.display = 'none';
+  shell.onclick = (e) => { if (e.target === shell) closeCapture(); };
+  shell.innerHTML = `
+    <div class="modal capture-modal-inner" onclick="event.stopPropagation()">
+      <div class="modal-hd capture-modal-hd">
+        <div><h2>New capture</h2>
+          <div class="context-pill" id="capture-context-pill"></div>
+        </div>
+        <button class="close" onclick="closeCapture()">✕</button>
+      </div>
+      <nav class="mode-picker" id="capture-mode-picker">
+        <button type="button" class="mp-tab act" data-mode="voice" onclick="setCaptureMode('voice')">🎙 Voice</button>
+        <button type="button" class="mp-tab" data-mode="text" onclick="setCaptureMode('text')">✍ Quick note</button>
+        <button type="button" class="mp-tab" data-mode="photo" onclick="setCaptureMode('photo')">📷 Photo</button>
+      </nav>
+      <div class="capture-body mode-voice" id="capture-mode-voice">
+        <div class="record-area">
+          <button type="button" class="rec-btn" id="rec-btn" onclick="toggleRecord()"><span class="rec-dot"></span></button>
+          <div class="rec-meta">
+            <div class="rec-time mono" id="rec-time">00:00</div>
+            <div class="rec-status" id="rec-status">Tap to start recording</div>
+          </div>
+        </div>
+        <div class="transcript-area">
+          <label>Live transcript</label>
+          <div class="transcript" id="capture-transcript"><em class="muted">Transcript will appear here as you speak…</em></div>
+        </div>
+      </div>
+      <div class="capture-body mode-text" id="capture-mode-text" style="display:none">
+        <textarea id="capture-note-text" rows="6" placeholder="Type your observation…" oninput="updateCaptureCharCount()"></textarea>
+        <div class="char-count"><span id="capture-cc">0</span> characters</div>
+      </div>
+      <div class="capture-body mode-photo" id="capture-mode-photo" style="display:none">
+        <div class="upload-zone" id="capture-upload-zone" onclick="document.getElementById('capture-photo-input').click()">
+          <div class="uz-ic">📷</div>
+          <b>Drag a photo or click to choose</b>
+          <small>Camera access disabled in demo</small>
+        </div>
+        <input type="file" id="capture-photo-input" accept="image/*" style="display:none" onchange="onCapturePhotoChosen(event)">
+        <div class="photo-preview" id="capture-photo-preview" style="display:none">
+          <img id="capture-photo-img" alt="">
+          <input type="text" id="capture-photo-caption" placeholder="Caption (optional)">
+        </div>
+      </div>
+      <div class="tag-panel" id="capture-tag-panel"></div>
+      <div class="visibility-row">
+        <div>
+          <input type="radio" name="cap-vis" id="cap-vp" value="private" checked>
+          <label for="cap-vp">Private to me</label>
+          <input type="radio" name="cap-vis" id="cap-vt" value="shared" style="margin-left:14px">
+          <label for="cap-vt">Share with team</label>
+        </div>
+        <small class="muted">Private captures still feed your personal Ask Anything; shared captures feed everyone's.</small>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="closeCapture()">Cancel</button>
+        <button class="btn-primary" onclick="saveCapture()">Save capture</button>
+      </div>
+    </div>`;
+  document.body.appendChild(shell);
+}
+
+function renderCaptureContextPill(ctx) {
+  const el = document.getElementById('capture-context-pill');
+  if (!el) return;
+  const pills = [];
+  ctx.kols.forEach(id => {
+    const k = getKol(id);
+    if (k) pills.push(`<span class="chip soft"><span class="av xs">${k.initials}</span> ${k.name}</span>`);
+  });
+  ctx.abstracts.forEach(id => {
+    const a = getAbstract(id);
+    if (a) pills.push(`<span class="chip soft">${a.id.toUpperCase()}</span>`);
+  });
+  const cong = DATA.congresses.find(c => c.id === ctx.congress);
+  if (cong) pills.push(`<span class="chip soft">${cong.acronym} 2026</span>`);
+  el.innerHTML = `<small>Attaching to:</small> ${pills.join(' ') || '<span class="chip soft">Congress only</span>'}`;
+}
+
+function renderCaptureTagPanel(ctx) {
+  const el = document.getElementById('capture-tag-panel');
+  if (!el) return;
+  const types = ['Spotlight meeting', 'Hallway', 'Session reaction', 'Competitive intel', 'Q&A highlight', 'General'];
+  const kolChips = ctx.kols.map(id => {
+    const k = getKol(id);
+    if (!k) return '';
+    return `<span class="chip line selected" data-kol="${id}"><span class="av xs">${k.initials}</span> ${k.name} ✓</span>`;
+  }).join('');
+  const topicChips = (ctx.topics || []).map(t =>
+    `<span class="chip line selected">${t} ✓</span>`
+  ).join('');
+  const typeChips = types.map(t =>
+    `<button type="button" class="chip-pick${t === ctx.capture_type ? ' act' : ''}" onclick="setCaptureType('${t.replace(/'/g, "\\'")}')">${t}</button>`
+  ).join('');
+  el.innerHTML = `
+    <div class="tg-grp"><label>Person</label><div class="tg-chips">${kolChips || '<span class="muted">None detected</span>'}</div></div>
+    <div class="tg-grp"><label>Topic</label><div class="tg-chips">${topicChips || '<span class="muted">Congress context</span>'}</div></div>
+    <div class="tg-grp"><label>Capture type</label><div class="tg-chips">${typeChips}</div></div>`;
+}
+
+function setCaptureType(t) {
+  CAPTURE_STATE.context.capture_type = t;
+  renderCaptureTagPanel(CAPTURE_STATE.context);
+}
+
+function openCapture(mode) {
+  if (!localStorage.getItem('capture-perms-ok')) {
+    showToast('Allow camera/mic access? (demo — proceeding)');
+    localStorage.setItem('capture-perms-ok', '1');
+  }
+  ensureCaptureModal();
+  CAPTURE_STATE.context = deriveCaptureContext();
+  CAPTURE_STATE.mode = mode || 'voice';
+  CAPTURE_STATE.recording = false;
+  CAPTURE_STATE.recordSeconds = 0;
+  const shell = document.getElementById('modal-capture');
+  shell.style.display = 'flex';
+  renderCaptureContextPill(CAPTURE_STATE.context);
+  renderCaptureTagPanel(CAPTURE_STATE.context);
+  setCaptureMode(CAPTURE_STATE.mode);
+  document.getElementById('capture-transcript').innerHTML = '<em class="muted">Transcript will appear here as you speak…</em>';
+  document.getElementById('capture-note-text').value = '';
+  document.getElementById('rec-time').textContent = '00:00';
+  document.getElementById('rec-status').textContent = 'Tap to start recording';
+  document.getElementById('rec-btn')?.classList.remove('recording');
+  updateCaptureCharCount();
+}
+
+function closeCapture() {
+  const shell = document.getElementById('modal-capture');
+  if (shell) shell.style.display = 'none';
+  if (CAPTURE_STATE.recordTimer) {
+    clearInterval(CAPTURE_STATE.recordTimer);
+    CAPTURE_STATE.recordTimer = null;
+  }
+  CAPTURE_STATE.recording = false;
+}
+
+function setCaptureMode(mode) {
+  CAPTURE_STATE.mode = mode;
+  document.querySelectorAll('#capture-mode-picker .mp-tab').forEach(t =>
+    t.classList.toggle('act', t.dataset.mode === mode));
+  document.getElementById('capture-mode-voice').style.display = mode === 'voice' ? '' : 'none';
+  document.getElementById('capture-mode-text').style.display = mode === 'text' ? '' : 'none';
+  document.getElementById('capture-mode-photo').style.display = mode === 'photo' ? '' : 'none';
+  if (mode === 'text') setTimeout(() => document.getElementById('capture-note-text')?.focus(), 50);
+}
+
+function updateCaptureCharCount() {
+  const ta = document.getElementById('capture-note-text');
+  const cc = document.getElementById('capture-cc');
+  if (ta && cc) cc.textContent = ta.value.length;
+}
+
+function mockTranscriptForContext(ctx) {
+  const k = ctx.kols[0] ? getKol(ctx.kols[0]) : null;
+  if (k) return `Just wrapped a hallway with ${k.name}. Flagged transmural healing as the next regulatory inflection — open to GSK pipeline discussion next quarter.`;
+  const a = ctx.abstracts[0] ? getAbstract(ctx.abstracts[0]) : null;
+  if (a) return `Session reaction on ${a.title.slice(0, 60)}… Effect size read as real but below field expectations on secondary endpoint.`;
+  return 'Quick onsite note — competitive IL-23 narrative intensifying in hallway conversations.';
+}
+
+function toggleRecord() {
+  const btn = document.getElementById('rec-btn');
+  const status = document.getElementById('rec-status');
+  if (CAPTURE_STATE.recording) {
+    CAPTURE_STATE.recording = false;
+    btn?.classList.remove('recording');
+    status.textContent = 'Recording stopped';
+    clearInterval(CAPTURE_STATE.recordTimer);
+    CAPTURE_STATE.recordTimer = null;
+    document.getElementById('capture-transcript').textContent = mockTranscriptForContext(CAPTURE_STATE.context);
+    return;
+  }
+  CAPTURE_STATE.recording = true;
+  CAPTURE_STATE.recordSeconds = 0;
+  btn?.classList.add('recording');
+  status.textContent = 'Recording…';
+  const duration = 8 + Math.floor(Math.random() * 8);
+  CAPTURE_STATE.recordTimer = setInterval(() => {
+    CAPTURE_STATE.recordSeconds++;
+    const m = String(Math.floor(CAPTURE_STATE.recordSeconds / 60)).padStart(2, '0');
+    const s = String(CAPTURE_STATE.recordSeconds % 60).padStart(2, '0');
+    document.getElementById('rec-time').textContent = `${m}:${s}`;
+    if (CAPTURE_STATE.recordSeconds >= duration) toggleRecord();
+  }, 1000);
+}
+
+function onCapturePhotoChosen(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById('capture-upload-zone').style.display = 'none';
+    const prev = document.getElementById('capture-photo-preview');
+    prev.style.display = 'block';
+    document.getElementById('capture-photo-img').src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveCapture() {
+  const ctx = CAPTURE_STATE.context;
+  const mode = CAPTURE_STATE.mode;
+  const vis = document.querySelector('input[name="cap-vis"]:checked')?.value || 'private';
+  const id = `${mode === 'voice' ? 'v' : mode === 'photo' ? 'p' : 'n'}-${Date.now().toString(36).slice(-4)}`;
+  const cap = {
+    id,
+    type: mode === 'photo' ? 'photo' : mode === 'voice' ? 'voice' : 'text',
+    author: CURRENT_USER_ID,
+    visibility: vis,
+    capture_type: ctx.capture_type || 'General',
+    congress: ctx.congress,
+    day: 1,
+    timestamp: new Date().toISOString(),
+    attached_kols: [...ctx.kols],
+    attached_abstracts: [...ctx.abstracts],
+    attached_topics: [...ctx.topics],
+    location: 'San Diego Convention Center',
+    userCreated: true
+  };
+  if (mode === 'voice') {
+    const tr = document.getElementById('capture-transcript')?.textContent?.trim();
+    cap.transcript = tr && !tr.includes('will appear') ? tr : mockTranscriptForContext(ctx);
+    cap.duration = document.getElementById('rec-time')?.textContent || '1:00';
+  } else if (mode === 'text') {
+    cap.text = document.getElementById('capture-note-text')?.value || '';
+  } else {
+    cap.caption = document.getElementById('capture-photo-caption')?.value || 'Onsite photo capture';
+    cap.image_url = document.getElementById('capture-photo-img')?.src || '';
+  }
+  DATA.captures.unshift(cap);
+  persistCaptures();
+  closeCapture();
+  showCaptureSavedToast(id);
+  if (APP_STATE.activeNavKey === 'captures') renderCaptureStream();
+  else route();
+}
+
+function showCaptureSavedToast(captureId) {
+  const t = document.createElement('div');
+  t.className = 'toast toast-capture';
+  t.innerHTML = `✓ Capture saved · <a href="#/captures/${captureId}" style="color:#fff;text-decoration:underline">view</a>`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+let captureStreamFiltersBound = false;
+
+function renderCaptureStream() {
+  const client = getClient(APP_STATE.activeClientId);
+  const congressId = APP_STATE.activeCongressId;
+  const filters = CAPTURE_STATE.filters;
+  const list = getCapturesForCongress(congressId, filters);
+  const groups = groupCapturesByDay(list);
+  const lastMin = Math.max(1, Math.floor((Date.now() - CAPTURE_STATE.lastStreamUpdate) / 60000));
+  const recentHour = list.filter(c => Date.now() - new Date(c.timestamp).getTime() < 3600000).length;
+
+  const filterChips = [
+    { key: 'type-all', label: 'All types', group: 'type', val: 'all' },
+    { key: 'type-voice', label: '🎙 Voice', group: 'type', val: 'voice' },
+    { key: 'type-text', label: '✍ Note', group: 'type', val: 'text' },
+    { key: 'type-photo', label: '📷 Photo', group: 'type', val: 'photo' },
+    { key: 'vis-mine', label: 'Mine only', group: 'visibility', val: 'mine' },
+    { key: 'vis-shared', label: 'Shared with team', group: 'visibility', val: 'shared' },
+    { key: 'day-1', label: 'Day 1', group: 'day', val: '1' },
+    { key: 'day-2', label: 'Day 2', group: 'day', val: '2' }
+  ];
+
+  const chipsHtml = filterChips.map(f => {
+    const act = filters[f.group] === f.val ? ' act' : '';
+    return `<span class="fchip${act}" data-fg="${f.group}" data-fv="${f.val}" onclick="toggleCaptureFilter('${f.group}','${f.val}')">${f.label}</span>`;
+  }).join('');
+
+  const streamHtml = groups.length
+    ? groups.map(g => `
+      <div class="day-group">
+        <div class="dg-hd"><b>${g.label}</b> <small>Day ${g.day}${g.day === 1 ? ' · today' : ''}</small></div>
+        ${g.captures.map(c => renderCaptureCard(c)).join('')}
+      </div>`).join('')
+    : `<div class="empty"><h3>No captures match your filters</h3><p>Quiet so far — be the first to capture something. Tap the + button.</p></div>`;
+
+  setPage(`
+    <div class="crumb">Client Workspaces › ${client.name} › DDW 2026 › <b>Captures</b></div>
+    <div class="ph">
+      <div class="eyebrow">Onsite intelligence · Day 1 of 4</div>
+      <h2>Capture stream <span class="live-dot"><i></i> Live</span></h2>
+      <p>Every capture from the team, in real time. Filter to your view; tag to make it permanent.</p>
+      <div class="ph-actions">
+        <button class="btn-secondary" onclick="openExportModal('captures')">⬇ Export digest</button>
+        <button class="btn-primary" onclick="openCapture()">＋ New capture</button>
+      </div>
+    </div>
+    <div class="filters capture-filters">
+      <span class="fl">FILTER</span>
+      ${chipsHtml}
+      <button class="feed-clear-all" onclick="clearCaptureFilters()">Clear all</button>
+      <div class="result-mini"><b id="capture-count">${list.length}</b> captures · last 30 min: <b>${recentHour}</b> · updated <span id="cap-live-ago">${lastMin}</span> min ago</div>
+    </div>
+    <div class="capture-stream" id="capture-stream-list">${streamHtml}</div>
+  `);
+  startCaptureDripFeed();
+  mountCaptureFab();
+}
+
+function toggleCaptureFilter(group, val) {
+  const f = CAPTURE_STATE.filters;
+  if (f[group] === val) f[group] = 'all';
+  else f[group] = val;
+  renderCaptureStream();
+}
+
+function clearCaptureFilters() {
+  CAPTURE_STATE.filters = { type: 'all', visibility: 'all', author: 'all', capture_type: 'all', day: 'all' };
+  renderCaptureStream();
+}
+
+function refreshCaptureStreamList() {
+  const el = document.getElementById('capture-stream-list');
+  if (!el || APP_STATE.activeNavKey !== 'captures') return;
+  const list = getCapturesForCongress(APP_STATE.activeCongressId, CAPTURE_STATE.filters);
+  const groups = groupCapturesByDay(list);
+  CAPTURE_STATE.lastStreamUpdate = Date.now();
+  const countEl = document.getElementById('capture-count');
+  if (countEl) countEl.textContent = list.length;
+  const agoEl = document.getElementById('cap-live-ago');
+  if (agoEl) agoEl.textContent = '0';
+  el.innerHTML = groups.length
+    ? groups.map(g => `
+      <div class="day-group">
+        <div class="dg-hd"><b>${g.label}</b> <small>Day ${g.day}</small></div>
+        ${g.captures.map(c => renderCaptureCard(c)).join('')}
+      </div>`).join('')
+    : `<div class="empty"><h3>No captures match your filters</h3></div>`;
+  renderSidebar();
+}
+
+function startCaptureDripFeed() {
+  stopCaptureDripFeed();
+  captureDripInterval = setInterval(() => {
+    const item = DATA.captureDripFeed[CAPTURE_STATE.dripIndex % DATA.captureDripFeed.length];
+    CAPTURE_STATE.dripIndex++;
+    if (!item) return;
+    const id = `drip-${Date.now().toString(36).slice(-4)}`;
+    const cap = {
+      id,
+      type: item.type,
+      author: item.author,
+      visibility: item.visibility || 'shared',
+      capture_type: item.capture_type || 'General',
+      congress: item.congress || APP_STATE.activeCongressId,
+      day: item.day || 1,
+      timestamp: new Date().toISOString(),
+      text: item.text,
+      caption: item.caption,
+      transcript: item.text,
+      attached_kols: item.attached_kols || [],
+      attached_abstracts: item.attached_abstracts || [],
+      attached_topics: item.attached_topics || [],
+      attached_companies: item.attached_companies || [],
+      _new: true
+    };
+    DATA.captures.unshift(cap);
+    refreshCaptureStreamList();
+    setTimeout(() => { const c = getCapture(id); if (c) delete c._new; }, 3000);
+  }, 30000);
+}
+
+function stopCaptureDripFeed() {
+  if (captureDripInterval) {
+    clearInterval(captureDripInterval);
+    captureDripInterval = null;
+  }
+}
+
+function renderCaptureDetail(id) {
+  const c = getCapture(id);
+  if (!c) {
+    setPage(`<div class="empty"><h3>Capture not found</h3><a class="back-link" href="#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/captures">← Back</a></div>`);
+    return;
+  }
+  const member = getTeamMember(c.author) || { name: 'Unknown', initials: '??' };
+  const isOwner = c.author === CURRENT_USER_ID;
+  const rel = relatedCaptures(c);
+  const streamUrl = `#/clients/${APP_STATE.activeClientId}/congresses/${c.congress || APP_STATE.activeCongressId}/captures`;
+
+  let content = '';
+  if (c.type === 'voice') {
+    content = `
+      <div class="player">
+        <button type="button" class="play" onclick="showToast('Playback stubbed in demo')">▶</button>
+        <div class="waveform-lg"><svg viewBox="0 0 600 60" preserveAspectRatio="none"><path d="M0,30 Q50,10 100,30 T200,25 T300,35 T400,20 T500,30 T600,25" fill="none" stroke="var(--teal)" stroke-width="2"/></svg></div>
+        <div class="player-meta mono">00:00 / ${c.duration || '1:48'}</div>
+      </div>
+      <div class="transcript-block">
+        <label>Transcript</label>
+        <p>${(c.transcript || '').split('\n').map(p => p.trim()).filter(Boolean).map(p => `"${p}"`).join('</p><p>')}</p>
+      </div>`;
+  } else if (c.type === 'photo') {
+    content = `
+      <div class="cap-photo-full">${c.image_url ? `<img src="${c.image_url}" alt="">` : '<div class="cap-photo-ph lg">📷</div>'}</div>
+      <div class="transcript-block"><label>Caption</label><p>${c.caption || ''}</p></div>`;
+  } else {
+    content = `<div class="transcript-block"><label>Note</label><p>${c.text || ''}</p></div>`;
+  }
+
+  const attachRows = [];
+  (c.attached_kols || []).forEach(kid => {
+    const k = getKol(kid);
+    if (k) attachRows.push(`<a class="att-row" href="#/kols/${k.id}"><div class="av sm">${k.initials}</div><div><b>${k.name}</b><small>${k.affiliation}</small></div></a>`);
+  });
+  (c.attached_abstracts || []).forEach(aid => {
+    const a = getAbstract(aid);
+    if (a) attachRows.push(`<a class="att-row" href="#/abstracts/${a.id}"><div class="ic-sq">📄</div><div><b>${a.title.slice(0, 50)}…</b><small>${a.schedule}</small></div></a>`);
+  });
+
+  setPage(`
+    <a class="back-link" href="${streamUrl}">← Back to capture stream</a>
+    <div class="cap-detail-hd">
+      <div class="cap-type">${captureTypeIcon(c.type)} ${c.type} capture</div>
+      <h2>${c.capture_type || 'Onsite capture'}</h2>
+      <div class="cap-meta-row">
+        <div class="av sm">${member.initials}</div>
+        <b>${member.name}</b>
+        <small>· ${new Date(c.timestamp).toLocaleString()} · ${c.duration || ''} · DDW 2026</small>
+        <span class="vis-pill ${c.visibility}"><span class="d"></span> ${c.visibility === 'private' ? 'PRIVATE' : 'SHARED WITH TEAM'}</span>
+      </div>
+      <div class="cap-actions">
+        ${c.visibility === 'private' ? `<button class="btn-secondary" onclick="shareCapture('${c.id}')">⤴ Share</button>` : ''}
+        ${isOwner ? `<button class="btn-secondary" onclick="showToast('Edit mode coming soon')">✎ Edit</button>` : ''}
+        ${c.type === 'voice' ? `<button class="btn-secondary" onclick="showToast('Download stubbed in demo')">⬇ Download audio</button>` : ''}
+        ${isOwner ? `<button class="btn-danger-ghost" onclick="deleteCapture('${c.id}')">✕ Delete</button>` : ''}
+      </div>
+    </div>
+    <div class="cols-2 cap-detail-cols">
+      <div class="cap-content">${content}</div>
+      <aside class="cap-side">
+        <div class="panel">
+          <div class="panel-h">Attached to</div>
+          <div class="panel-b">${attachRows.join('') || '<span class="muted">Congress only</span>'}
+            <div class="tag-list" style="margin-top:8px">${renderCaptureTags(c)}</div>
+          </div>
+        </div>
+        ${rel.length ? `<div class="panel"><div class="panel-h">Related captures</div><div class="panel-b">
+          ${rel.map(r => {
+            const m = getTeamMember(r.author);
+            return `<a class="rel-row" href="#/captures/${r.id}"><div class="av xs">${m?.initials || '??'}</div><small><b>${m?.name}</b> · ${formatTimeAgo(r.timestamp)}</small><p>"${captureBodyPreview(r, 60)}"</p></a>`;
+          }).join('')}
+        </div></div>` : ''}
+      </aside>
+    </div>
+    <div class="provenance">Captured ${new Date(c.timestamp).toLocaleString()} · iPhone · ${c.location || 'San Diego Convention Center'}</div>
+  `);
+  mountCaptureFab();
+}
+
+function shareCapture(id) {
+  const c = getCapture(id);
+  if (!c) return;
+  c.visibility = 'shared';
+  persistCaptures();
+  showToast('✓ Capture shared with team');
+  route();
+}
+
+function deleteCapture(id) {
+  DATA.captures = DATA.captures.filter(c => c.id !== id);
+  persistCaptures();
+  showToast('Capture deleted');
+  location.hash = `#/clients/${APP_STATE.activeClientId}/congresses/${APP_STATE.activeCongressId}/captures`;
+}
+
+function renderRecentCapturesPanel(limit = 3) {
+  const caps = getCapturesForCongress(APP_STATE.activeCongressId)
+    .filter(c => c.visibility === 'shared')
+    .slice(0, limit);
+  if (!caps.length) return '<div class="muted" style="padding:12px">No team captures yet.</div>';
+  return caps.map(c => renderCaptureCard(c, { compact: true })).join('');
+}
+
+function renderKolCaptureNotes(kolId) {
+  const caps = getCapturesForKol(kolId);
+  if (!caps.length) {
+    return `<div class="note"><div class="nh"><b>DDW 2025 · hallway debrief</b><small>MAY 2025</small></div>
+      <p>Cautiously optimistic on IL-23 selectivity but flagged the lack of head-to-head data as the key gap.</p>
+      <div class="src">🎙 Voice note · 2:14</div></div>`;
+  }
+  return caps.slice(0, 6).map(c => {
+    const m = getTeamMember(c.author);
+    return `<a class="note cap-note-embed" href="#/captures/${c.id}">
+      <div class="nh"><b>${c.capture_type || 'Capture'}</b><small>${formatTimeAgo(c.timestamp)}</small></div>
+      <p>${captureBodyPreview(c, 180)}</p>
+      <div class="src">${captureTypeIcon(c.type)} ${m?.name || 'Team'} · ${c.visibility === 'private' ? 'Private' : 'Shared'}</div>
+    </a>`;
+  }).join('');
+}
+
+function renderAbstractFieldReactions(abstractId) {
+  const caps = getCapturesForAbstract(abstractId);
+  if (!caps.length) return '<p class="muted">No field reactions yet for this abstract.</p>';
+  return `<div class="capture-embed-list">${caps.slice(0, 4).map(c => renderCaptureCard(c, { compact: true })).join('')}</div>`;
 }
 
 // ==========================================================
@@ -2504,8 +3630,12 @@ window.addEventListener('hashchange', route);
 window.addEventListener('load', () => {
   const preferred = localStorage.getItem(defaultWorkspaceKey());
   if (preferred && DATA.clients.some(c => c.id === preferred)) APP_STATE.activeClientId = preferred;
+  loadCaptures();
   if (location.search.includes('reset=1')) {
-    Object.keys(localStorage).forEach(k => { if (k.startsWith('client-') || k === defaultWorkspaceKey()) localStorage.removeItem(k); });
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('client-') || k === defaultWorkspaceKey() || k === capturesStorageKey() || k === 'capture-perms-ok') localStorage.removeItem(k);
+    });
+    seedCaptures();
     showToast('Demo state reset.');
   }
   if (!location.hash || location.hash === '#') {

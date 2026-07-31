@@ -1,0 +1,648 @@
+<title>350 Saginaw Pkwy — Main Floor · Minimal Modern Boho</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* ---------- Tokens ---------- */
+  :root{
+    /* material palette — constant across themes (these are real finishes) */
+    --clay:#B26A47; --clay-lt:#CE9370; --olive:#6E6F4E; --olive-lt:#8C8D69;
+    --oak:#C79A5E; --rattan:#D3AE76; --terra:#9E5A3C; --cream:#F7F1E6;
+
+    /* semantic — light theme */
+    --bg:#EEE5D6; --surface:#F7F1E7; --surface-2:#E6D8C2; --raise:#FBF7EF;
+    --text:#2B2620; --muted:#6C5F50; --faint:#8B7E6C;
+    --line:#D8C8B0; --hair:#00000014;
+    --accent:#A9613E; --accent-ink:#fff;
+
+    /* scene (room render) palette */
+    --scene-wall:#E9DECC; --scene-wall-2:#E1D2BA; --scene-floor:#D3BC98;
+    --scene-shadow:#0000001a;
+
+    --maxw:1180px;
+    --serif:'Hoefler Text','Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#1B1712; --surface:#25201A; --surface-2:#2E2820; --raise:#2B251D;
+      --text:#ECE3D3; --muted:#AC9E89; --faint:#8B7E6B;
+      --line:#3A3025; --hair:#ffffff12;
+      --accent:#D59B74; --accent-ink:#241a12;
+      --scene-wall:#3B3327; --scene-wall-2:#453B2C; --scene-floor:#4C4030;
+      --scene-shadow:#00000040;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#EEE5D6; --surface:#F7F1E7; --surface-2:#E6D8C2; --raise:#FBF7EF;
+    --text:#2B2620; --muted:#6C5F50; --faint:#8B7E6C;
+    --line:#D8C8B0; --hair:#00000014; --accent:#A9613E; --accent-ink:#fff;
+    --scene-wall:#E9DECC; --scene-wall-2:#E1D2BA; --scene-floor:#D3BC98; --scene-shadow:#0000001a;
+  }
+  :root[data-theme="dark"]{
+    --bg:#1B1712; --surface:#25201A; --surface-2:#2E2820; --raise:#2B251D;
+    --text:#ECE3D3; --muted:#AC9E89; --faint:#8B7E6B;
+    --line:#3A3025; --hair:#ffffff12; --accent:#D59B74; --accent-ink:#241a12;
+    --scene-wall:#3B3327; --scene-wall-2:#453B2C; --scene-floor:#4C4030; --scene-shadow:#00000040;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px)}
+  a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--faint);margin:0;
+  }
+  h1,h2,h3{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.08}
+  .serif{font-family:var(--serif)}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in oklab,var(--bg) 86%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  }
+  .topbar .row{display:flex;align-items:center;gap:18px;height:56px}
+  .brand{font-family:var(--serif);font-size:1.02rem;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+  .brand b{color:var(--accent);font-weight:600}
+  .navlinks{margin-left:auto;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .navlinks::-webkit-scrollbar{display:none}
+  .navlinks a{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .navlinks a:hover{color:var(--text);background:var(--hair)}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:clamp(46px,8vw,96px) 0 clamp(30px,5vw,54px);position:relative}
+  .hero .kicker{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+  .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+  .hero h1{
+    font-size:clamp(2.5rem,7vw,5.1rem);margin:.1em 0 .28em;letter-spacing:-.015em;
+  }
+  .hero h1 em{font-style:italic;color:var(--accent)}
+  .hero .lede{font-size:clamp(1.06rem,2vw,1.32rem);color:var(--muted);max-width:60ch;margin:0}
+  .hero .meta{display:flex;flex-wrap:wrap;gap:26px;margin-top:34px}
+  .hero .meta div{border-left:2px solid var(--accent);padding-left:14px}
+  .hero .meta dt{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .hero .meta dd{margin:2px 0 0;font-family:var(--serif);font-size:1.28rem}
+  .hero .meta dd small{font-family:var(--sans);font-size:.8rem;color:var(--muted);display:block;font-weight:400}
+
+  /* ---------- Palette strip ---------- */
+  .palette{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;margin-top:20px}
+  .sw{padding:16px 14px 14px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;color:#231d16}
+  .sw b{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em}
+  .sw span{font-size:.74rem;opacity:.72;font-family:var(--mono)}
+  .sw.lt{color:#231d16}.sw.dk{color:#f4ecdd}
+  @media(max-width:720px){.palette{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:400px){.palette{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- Section frame ---------- */
+  section{padding:clamp(40px,6vw,72px) 0;border-top:1px solid var(--line)}
+  .sec-head{max-width:64ch}
+  .sec-head h2{font-size:clamp(1.7rem,3.6vw,2.5rem);margin:.35em 0 .3em}
+  .sec-head p{color:var(--muted);margin:0;font-size:1.03rem}
+
+  /* ---------- Materials chips ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .chip{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);
+    border-radius:999px;padding:8px 14px 8px 9px;font-size:.86rem}
+  .chip i{width:16px;height:16px;border-radius:50%;display:inline-block;flex:none;border:1px solid #00000022}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:30px}
+  .rule{background:var(--surface);padding:20px 20px 22px}
+  .rule .n{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--accent)}
+  .rule h4{font-family:var(--serif);font-size:1.12rem;margin:.5em 0 .3em;font-weight:600}
+  .rule p{margin:0;color:var(--muted);font-size:.9rem}
+
+  /* ---------- Room ---------- */
+  .room{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(24px,4vw,52px);align-items:center}
+  .room.flip .render{order:2}
+  @media(max-width:820px){.room{grid-template-columns:1fr}.room.flip .render{order:0}}
+  .room .rlabel{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .room .rlabel .no{font-family:var(--mono);color:var(--accent);font-size:.8rem;letter-spacing:.1em}
+  .room .rlabel .dim{font-family:var(--mono);font-size:.72rem;color:var(--faint);letter-spacing:.06em}
+  .room h3{font-size:clamp(1.5rem,3vw,2.15rem);margin:.05em 0 .35em}
+  .room .concept{color:var(--muted);font-size:1.02rem;margin:0 0 22px;max-width:52ch}
+
+  .plan{display:grid;gap:14px}
+  .pl{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:15px 17px}
+  .pl h5{margin:0 0 8px;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;align-items:center;gap:8px}
+  .pl h5 .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .pl ul{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+  .pl li{position:relative;padding-left:18px;font-size:.93rem;color:var(--text)}
+  .pl li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:2px;background:var(--faint)}
+  .pl li b{font-weight:600}
+  .note{font-size:.86rem;color:var(--muted);font-style:italic;font-family:var(--serif);
+    border-left:2px solid var(--accent);padding-left:13px;margin-top:4px}
+
+  /* ---------- Render scene ---------- */
+  .render{position:relative}
+  .scene{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;
+    border:1px solid var(--line);box-shadow:0 24px 50px -30px var(--scene-shadow);
+    background:linear-gradient(#00000000,#00000000)}
+  .scene .cap{position:absolute;left:12px;bottom:11px;z-index:9;font-family:var(--mono);
+    font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#fff;
+    background:#0000006b;backdrop-filter:blur(2px);padding:4px 8px;border-radius:6px}
+  .scene *{position:absolute}
+  .wall{inset:0;background:linear-gradient(180deg,var(--scene-wall) 0%,var(--scene-wall) 70%,var(--scene-wall-2) 70%,var(--scene-wall-2) 100%)}
+  .floor{left:0;right:0;bottom:0;height:30%;background:var(--scene-floor);
+    background-image:linear-gradient(90deg,#0000000f 1px,transparent 1px);background-size:26px 100%}
+  .win{background:linear-gradient(160deg,#cfe3ea,#eef4f2);border:6px solid var(--scene-wall-2);box-shadow:inset 0 0 0 2px #ffffff44}
+  .arch-top{border-radius:100px 100px 0 0}
+  .rug{border-radius:40%;filter:blur(.2px);opacity:.96}
+  .plant-svg{overflow:visible}
+  .shadow{background:radial-gradient(ellipse at center,#00000026,transparent 70%);border-radius:50%}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:44px 0 70px}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:32px}
+  @media(max-width:720px){.foot-grid{grid-template-columns:1fr}}
+  footer h2{font-size:1.7rem;margin:0 0 .4em}
+  footer p{color:var(--muted);margin:0 0 14px;max-width:56ch}
+  .steps{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}
+  .steps li{padding-left:26px;position:relative;font-size:.95rem}
+  .steps li::before{content:attr(data-n);position:absolute;left:0;top:-1px;font-family:var(--mono);
+    font-size:.72rem;color:var(--accent);border:1px solid var(--line);border-radius:50%;
+    width:20px;height:20px;display:grid;place-items:center}
+  .disclaimer{font-size:.8rem;color:var(--faint);border:1px dashed var(--line);border-radius:12px;
+    padding:16px 18px;margin-top:8px}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+
+<div class="topbar">
+  <div class="wrap row">
+    <div class="brand">350 Saginaw · <b>Main Floor</b></div>
+    <nav class="navlinks" aria-label="Rooms">
+      <a href="#palette">Palette</a>
+      <a href="#foyer">Foyer</a>
+      <a href="#living">Living</a>
+      <a href="#family">Family</a>
+      <a href="#kitchen">Kitchen</a>
+      <a href="#dining">Dining</a>
+      <a href="#powder">Powder</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero wrap">
+  <div class="kicker">
+    <span class="tag">Remodel Concept</span>
+    <span class="tag">Minimal · Modern · Boho</span>
+    <span class="tag">Cambridge, ON</span>
+  </div>
+  <p class="eyebrow">350 Saginaw Parkway — Interior Design Board</p>
+  <h1>Warm, <em>pared-back</em> boho for the main floor.</h1>
+  <p class="lede">A furniture-and-finish plan that trades heavy, dark, formal pieces for
+    light oak, cane, bouclé and limewash — earthy and layered, but disciplined enough to
+    keep these compact rooms feeling open.</p>
+
+  <dl class="meta">
+    <div><dt>Floor</dt><dd>Main<small>911 sq ft interior</small></dd></div>
+    <div><dt>Rooms styled</dt><dd>6<small>Foyer · Living · Family · Kitchen+Nook · Dining · Powder</small></dd></div>
+    <div><dt>Direction</dt><dd>Boho, edited<small>3 textures / room, light &amp; leggy</small></dd></div>
+  </dl>
+</header>
+
+<!-- ===================== PALETTE + MATERIALS ===================== -->
+<section id="palette">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">01 — Foundation</p>
+      <h2>One warm palette, five honest materials.</h2>
+      <p>Everything on this floor pulls from the same short list so the rooms read as one home.
+        Plaster and oat on the walls, oak and rattan for warmth, clay and olive as the only
+        colours that raise their voice — and they take turns.</p>
+    </div>
+
+    <div class="palette reveal" role="img" aria-label="Six-colour material palette">
+      <div class="sw lt" style="background:#EFE7DA"><b>PLASTER WHITE</b><span>#EFE7DA · walls</span></div>
+      <div class="sw lt" style="background:#DAC7A9"><b>WARM OAT</b><span>#DAC7A9 · textiles</span></div>
+      <div class="sw dk" style="background:#B26A47"><b>CLAY TERRACOTTA</b><span>#B26A47 · accent</span></div>
+      <div class="sw dk" style="background:#6E6F4E"><b>MUTED OLIVE</b><span>#6E6F4E · accent</span></div>
+      <div class="sw lt" style="background:#C79A5E"><b>OAK / RATTAN</b><span>#C79A5E · wood</span></div>
+      <div class="sw dk" style="background:#2B2620"><b>ESPRESSO BLACK</b><span>#2B2620 · metal</span></div>
+    </div>
+
+    <div class="chips reveal" aria-label="Material and texture palette">
+      <span class="chip"><i style="background:#C79A5E"></i>White&nbsp;oak</span>
+      <span class="chip"><i style="background:#D3AE76"></i>Natural rattan &amp; cane</span>
+      <span class="chip"><i style="background:#E7DcC6"></i>Oatmeal bouclé</span>
+      <span class="chip"><i style="background:#CBB68C"></i>Jute &amp; wool flatweave</span>
+      <span class="chip"><i style="background:#EFE7DA"></i>Limewash / plaster</span>
+      <span class="chip"><i style="background:#B08D57"></i>Unlacquered brass</span>
+      <span class="chip"><i style="background:#2B2620"></i>Matte black</span>
+      <span class="chip"><i style="background:#EBD9C2"></i>Handmade zellige</span>
+      <span class="chip"><i style="background:#B26A47"></i>Terracotta &amp; stoneware</span>
+      <span class="chip"><i style="background:#6E6F4E"></i>Linen &amp; dried botanicals</span>
+    </div>
+
+    <div class="rules reveal">
+      <div class="rule"><div class="n">RULE 01</div><h4>Three textures, no more</h4>
+        <p>Per room: pick three materials to repeat (say oak, bouclé, jute). Boho tips into clutter fast — the edit is the design.</p></div>
+      <div class="rule"><div class="n">RULE 02</div><h4>Light &amp; leggy</h4>
+        <p>These rooms are 79–165 sq ft. Raised legs, open arms and cane backs let light and floor show through, so pieces read smaller.</p></div>
+      <div class="rule"><div class="n">RULE 03</div><h4>One clay moment</h4>
+        <p>Let a single terracotta gesture lead each room — a rug, a wall, a throw. Everything else stays quiet and warm-neutral.</p></div>
+      <div class="rule"><div class="n">RULE 04</div><h4>Warm metals, high drapery</h4>
+        <p>Swap chrome for matte black or unlacquered brass. Hang linen curtains near the ceiling and past the trim to lift low rooms.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOYER ===================== -->
+<section id="foyer">
+  <div class="wrap">
+    <div class="room reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall"></div>
+          <div class="floor"></div>
+          <!-- arched mirror -->
+          <div class="arch-top" style="width:20%;height:42%;left:12%;top:14%;background:linear-gradient(160deg,#d9e7ea,#f1f4f2);border:5px solid var(--rattan)"></div>
+          <!-- console -->
+          <div style="width:40%;height:12%;left:9%;bottom:30%;background:var(--oak);border-radius:4px"></div>
+          <div style="width:3%;height:12%;left:11%;bottom:18%;background:#0000002e"></div>
+          <div style="width:3%;height:12%;left:45%;bottom:18%;background:#0000002e"></div>
+          <!-- basket -->
+          <div style="width:11%;height:9%;left:14%;bottom:19%;background:var(--rattan);border-radius:3px"></div>
+          <!-- vase + pampas -->
+          <div style="width:5%;height:9%;right:44%;bottom:42%;background:var(--olive);border-radius:6px 6px 3px 3px"></div>
+          <svg class="plant-svg" style="width:16%;height:26%;right:40%;bottom:48%" viewBox="0 0 60 90" aria-hidden="true">
+            <g stroke="#c9b48c" stroke-width="3" fill="none" stroke-linecap="round">
+              <path d="M30 90 C20 55 14 40 8 20"/><path d="M30 90 C30 55 30 38 30 10"/>
+              <path d="M30 90 C40 55 46 40 52 20"/><path d="M30 90 C24 60 22 46 18 30"/>
+              <path d="M30 90 C36 60 38 46 42 30"/>
+            </g></svg>
+          <!-- pendant -->
+          <div style="width:2px;height:14%;left:72%;top:0;background:#0000004d"></div>
+          <div class="arch-top" style="width:13%;height:12%;left:66%;top:14%;background:var(--rattan);border-radius:50% 50% 46% 46%;opacity:.92"></div>
+          <!-- runner rug -->
+          <div class="rug" style="width:30%;height:7%;left:20%;bottom:6%;background:repeating-linear-gradient(90deg,#cbb68c 0 14px,#b26a47 14px 17px)"></div>
+          <div class="cap">Concept · Foyer &amp; hall</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 01</span><span class="dim">Foyer + central hall · staircase sightline</span></div>
+        <h3>A calm, grounded welcome</h3>
+        <p class="concept">The first three seconds of the house. Keep the sightline from the front door
+          clear and let one warm vignette do the talking — wood, a woven basket, something green.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Any bulky coat armoire or dark console that narrows the entry</li>
+              <li>Builder-grade flush ceiling light &amp; chrome hooks</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in</h5>
+            <ul><li><b>Slim oak + cane console</b> on legs (12–14" deep) with a woven catch-all basket beneath</li>
+              <li><b>Arched rattan mirror</b> to bounce daylight down the hall</li>
+              <li><b>Woven pendant</b> or rattan flush-mount + matte-black wall hooks</li>
+              <li>Olive stoneware vase with pampas; low <b>terracotta-striped runner</b></li></ul></div>
+          <p class="note">Small footprint — everything hugs one wall so the door swing and stair stay open.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LIVING ===================== -->
+<section id="living">
+  <div class="wrap">
+    <div class="room flip reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall"></div>
+          <div class="floor"></div>
+          <!-- window arched, high & wide -->
+          <div class="arch-top win" style="width:34%;height:46%;left:8%;top:8%"></div>
+          <!-- olive curtains -->
+          <div style="width:7%;height:56%;left:5%;top:8%;background:linear-gradient(90deg,#5c5d40,#7d7e5b);border-radius:3px"></div>
+          <div style="width:7%;height:56%;left:39%;top:8%;background:linear-gradient(90deg,#7d7e5b,#5c5d40);border-radius:3px"></div>
+          <!-- bouclé sofa -->
+          <div style="width:46%;height:16%;left:8%;bottom:30%;background:#E6D9C1;border-radius:12px 12px 6px 6px"></div>
+          <div style="width:46%;height:9%;left:8%;bottom:44%;background:#EDE2CC;border-radius:12px 12px 0 0"></div>
+          <div style="width:5%;height:8%;left:9%;bottom:22%;background:#0000002b"></div>
+          <div style="width:5%;height:8%;left:44%;bottom:22%;background:#0000002b"></div>
+          <!-- clay + olive cushions -->
+          <div style="width:11%;height:9%;left:12%;bottom:42%;background:var(--clay);border-radius:6px;transform:rotate(-6deg)"></div>
+          <div style="width:11%;height:9%;left:33%;bottom:42%;background:var(--olive);border-radius:6px;transform:rotate(5deg)"></div>
+          <!-- travertine drum table -->
+          <div style="width:15%;height:7%;left:60%;bottom:26%;background:#e4d7bf;border-radius:50%"></div>
+          <div style="width:15%;height:11%;left:60%;bottom:16%;background:#d8c8a8;border-radius:0 0 8px 8px"></div>
+          <!-- cane chair -->
+          <div style="width:15%;height:20%;right:8%;bottom:30%;background:var(--rattan);border-radius:14px 14px 6px 6px"></div>
+          <div style="width:11%;height:9%;right:10%;bottom:30%;background:#E6D9C1;border-radius:6px"></div>
+          <!-- jute rug -->
+          <div class="rug" style="width:62%;height:12%;left:14%;bottom:4%;background:radial-gradient(#cdb88d,#bfa676)"></div>
+          <!-- pothos on table -->
+          <svg class="plant-svg" style="width:16%;height:20%;left:61%;bottom:32%" viewBox="0 0 60 70" aria-hidden="true">
+            <g stroke="#6e7a3f" stroke-width="3" fill="none" stroke-linecap="round">
+              <path d="M30 0 C20 20 40 30 26 50"/><path d="M30 0 C42 18 24 34 40 52"/></g>
+            <g fill="#7d8a49"><circle cx="21" cy="26" r="5"/><circle cx="40" cy="30" r="5"/><circle cx="27" cy="49" r="5"/><circle cx="39" cy="50" r="5"/></g></svg>
+          <div class="cap">Concept · Living</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 02</span><span class="dim">12'5" × 10'1" · 121 sq ft</span></div>
+        <h3>An airy conversation nook</h3>
+        <p class="concept">A tight front room, so it earns its keep as an intimate two-seat lounge.
+          Float a compact sofa, add one sculptural cane chair, and keep the centre of the floor visible.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Oversized sofa/sectional and dark, closed-front coffee table</li>
+              <li>Short curtains hung at the window frame</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in</h5>
+            <ul><li><b>Oatmeal bouclé loveseat</b> (≤ 72"), raised wood legs</li>
+              <li><b>Cane &amp; rattan lounge chair</b> for texture without bulk</li>
+              <li><b>Round travertine or oak drum table</b> — no hard corners in a small room</li>
+              <li>Layered <b>jute + wool flatweave</b>; olive linen drapes hung high &amp; wide</li>
+              <li>Clay throw, one olive cushion, trailing pothos</li></ul></div>
+          <p class="note">10-ft wall is the constraint: leggy pieces + a mirror opposite the window keep it breathing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAMILY ===================== -->
+<section id="family">
+  <div class="wrap">
+    <div class="room reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall"></div>
+          <div class="floor"></div>
+          <!-- low slat media console -->
+          <div style="width:50%;height:13%;left:25%;bottom:30%;background:repeating-linear-gradient(90deg,#c79a5e 0 12px,#b98c50 12px 14px);border-radius:4px"></div>
+          <!-- floating oak shelves + ceramics -->
+          <div style="width:26%;height:2.4%;left:9%;top:22%;background:var(--oak)"></div>
+          <div style="width:26%;height:2.4%;left:9%;top:34%;background:var(--oak)"></div>
+          <div style="width:5%;height:8%;left:12%;top:14%;background:var(--clay);border-radius:6px 6px 3px 3px"></div>
+          <div style="width:4%;height:6%;left:20%;top:16%;background:#e2d4bc;border-radius:5px"></div>
+          <div style="width:5%;height:7%;left:26%;top:27%;background:var(--olive);border-radius:5px"></div>
+          <!-- big linen sofa foreground -->
+          <div style="width:56%;height:18%;left:22%;bottom:8%;background:#E7DBC4;border-radius:14px"></div>
+          <div style="width:14%;height:10%;left:24%;bottom:24%;background:var(--clay);border-radius:7px;transform:rotate(-5deg)"></div>
+          <div style="width:14%;height:10%;left:63%;bottom:24%;background:#cdbf9d;border-radius:7px;transform:rotate(4deg)"></div>
+          <!-- leather pouf -->
+          <div style="width:12%;height:8%;left:8%;bottom:12%;background:#9c6a45;border-radius:50%"></div>
+          <!-- olive tree -->
+          <div style="width:4%;height:20%;right:9%;bottom:30%;background:var(--rattan);border-radius:4px"></div>
+          <svg class="plant-svg" style="width:22%;height:34%;right:2%;bottom:44%" viewBox="0 0 80 110" aria-hidden="true">
+            <g fill="#7f8b52"><ellipse cx="40" cy="30" rx="30" ry="34"/></g>
+            <g fill="#6d783f"><ellipse cx="26" cy="26" rx="10" ry="14"/><ellipse cx="54" cy="30" rx="10" ry="14"/><ellipse cx="40" cy="16" rx="10" ry="14"/></g>
+          </svg>
+          <!-- arc lamp -->
+          <div style="width:2px;height:40%;left:19%;top:10%;background:#0000004d;transform:rotate(8deg);transform-origin:bottom"></div>
+          <!-- jute rug -->
+          <div class="rug" style="width:70%;height:12%;left:16%;bottom:2%;background:radial-gradient(#cdb88d,#bda471)"></div>
+          <div class="cap">Concept · Family room</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 03</span><span class="dim">14'3" × 10'4" · 143 sq ft</span></div>
+        <h3>The textural anchor lounge</h3>
+        <p class="concept">The biggest everyday living space, so this is where layering earns its place —
+          a linen sofa, a leather pouf, an olive tree and a low slatted media wall, all kept in the same warm family.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Tall dark entertainment unit and glossy black media furniture</li>
+              <li>Matchy "living-room set" upholstery</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in</h5>
+            <ul><li><b>Low oak slat media console</b> — long and grounded, not tall</li>
+              <li><b>Linen or bouclé sofa</b> + a <b>leather pouf</b> that doubles as a footrest</li>
+              <li><b>Floating oak shelves</b> styled with stoneware, books, one clay vessel</li>
+              <li>Big <b>jute rug</b>, woven arc floor lamp, potted olive tree</li>
+              <li>Mixed pillows: mudcloth, bouclé, terracotta velvet (max three)</li></ul></div>
+          <p class="note">Layer, but audit: three textures repeated reads intentional; five reads busy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== KITCHEN + BREAKFAST ===================== -->
+<section id="kitchen">
+  <div class="wrap">
+    <div class="room flip reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall" style="--scene-wall:#EBE1D0"></div>
+          <div class="floor"></div>
+          <!-- base cabinets warm greige -->
+          <div style="width:100%;height:16%;left:0;bottom:30%;background:#c9bda6"></div>
+          <div style="width:100%;height:4%;left:0;bottom:46%;background:#e9e0cf"></div>
+          <!-- zellige backsplash -->
+          <div style="width:64%;height:16%;left:0;bottom:50%;background:repeating-linear-gradient(90deg,#efe6d5 0 15px,#e6dbc6 15px 16px),repeating-linear-gradient(0deg,#efe6d5 0 15px,#e6dbc6 15px 16px);background-blend-mode:multiply;opacity:.9"></div>
+          <!-- floating oak shelf + stoneware -->
+          <div style="width:40%;height:3%;left:6%;top:20%;background:var(--oak)"></div>
+          <div style="width:5%;height:8%;left:9%;top:12%;background:var(--clay);border-radius:5px 5px 2px 2px"></div>
+          <div style="width:4%;height:6%;left:17%;top:14%;background:#e2d4bc;border-radius:4px"></div>
+          <div style="width:5%;height:7%;left:24%;top:13%;background:var(--olive);border-radius:4px"></div>
+          <!-- rattan pendants over nook -->
+          <div style="width:2px;height:12%;right:26%;top:6%;background:#0000004d"></div>
+          <div style="width:2px;height:12%;right:16%;top:6%;background:#0000004d"></div>
+          <div class="arch-top" style="width:10%;height:9%;right:24%;top:18%;background:var(--rattan);border-radius:50% 50% 44% 44%"></div>
+          <div class="arch-top" style="width:10%;height:9%;right:14%;top:18%;background:var(--rattan);border-radius:50% 50% 44% 44%"></div>
+          <!-- oak pedestal table -->
+          <div style="width:26%;height:5%;right:8%;bottom:34%;background:var(--oak);border-radius:50%"></div>
+          <div style="width:4%;height:12%;right:19%;bottom:22%;background:#b98c50"></div>
+          <!-- cane bistro chairs -->
+          <div style="width:9%;height:16%;right:6%;bottom:20%;background:var(--rattan);border-radius:8px 8px 3px 3px"></div>
+          <div style="width:9%;height:16%;right:29%;bottom:20%;background:var(--rattan);border-radius:8px 8px 3px 3px"></div>
+          <!-- olive vase on table -->
+          <div style="width:4%;height:8%;right:19%;bottom:38%;background:var(--olive);border-radius:6px 6px 3px 3px"></div>
+          <!-- kilim -->
+          <div class="rug" style="width:34%;height:7%;right:5%;bottom:7%;background:repeating-linear-gradient(90deg,#b26a47 0 10px,#cbb68c 10px 18px,#6e6f4e 18px 22px)"></div>
+          <div class="cap">Concept · Kitchen &amp; breakfast nook</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 04</span><span class="dim">Kitchen 79 sq ft · Breakfast nook 105 sq ft</span></div>
+        <h3>Warm, handmade, light on its feet</h3>
+        <p class="concept">A compact kitchen that opens to the breakfast nook — treat them as one bright,
+          tactile zone. Keep the boxes, change the surfaces, and let the nook carry the softness.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Cold hardware, orange-toned wood tones, glossy tile</li>
+              <li>The formal breakfast set; heavy overhead fixture</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in — kitchen</h5>
+            <ul><li><b>Refaced / repainted cabinets</b> in warm greige; <b>slim matte-black or unlacquered-brass pulls</b></li>
+              <li>One run of <b>floating oak open shelving</b> with stoneware</li>
+              <li><b>Handmade cream zellige</b> backsplash; twin rattan pendants</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--olive)"></span>Bring in — nook</h5>
+            <ul><li><b>Round oak pedestal table</b> + <b>cane bistro chairs</b> (or a linen banquette)</li>
+              <li>Kilim runner, olive bud vase, a woven pendant to anchor the table</li></ul></div>
+          <p class="note">Tiny kitchen: stay light and reflective and limit open shelving to a single run so it never feels loaded.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DINING ===================== -->
+<section id="dining">
+  <div class="wrap">
+    <div class="room reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall"></div>
+          <div class="floor"></div>
+          <!-- limewashed fireplace -->
+          <div style="width:30%;height:60%;left:35%;top:6%;background:linear-gradient(180deg,#efe7d9,#e4d8c4)"></div>
+          <div style="width:22%;height:16%;left:39%;bottom:30%;background:#0000002e;border-radius:3px"></div>
+          <div style="width:34%;height:3.5%;left:33%;top:34%;background:var(--oak)"></div>
+          <!-- lean arched mirror on mantel -->
+          <div class="arch-top" style="width:14%;height:24%;left:43%;top:11%;background:linear-gradient(160deg,#d7e5e8,#eef2f0);border:4px solid var(--rattan)"></div>
+          <!-- vessels + tapers -->
+          <div style="width:3%;height:6%;left:37%;top:29%;background:var(--clay);border-radius:5px 5px 2px 2px"></div>
+          <div style="width:2%;height:7%;left:60%;top:27%;background:var(--olive);border-radius:4px"></div>
+          <!-- oversized rattan pendant -->
+          <div style="width:2px;height:12%;left:50%;top:0;background:#0000004d"></div>
+          <div class="arch-top" style="width:20%;height:15%;left:40%;top:12%;background:var(--rattan);border-radius:50% 50% 42% 42%;opacity:.9"></div>
+          <!-- oak plank table -->
+          <div style="width:60%;height:8%;left:20%;bottom:30%;background:var(--oak);border-radius:8px"></div>
+          <div style="width:3%;height:14%;left:26%;bottom:16%;background:#b98c50"></div>
+          <div style="width:3%;height:14%;left:71%;bottom:16%;background:#b98c50"></div>
+          <!-- mixed chairs: linen ends + cane sides -->
+          <div style="width:11%;height:20%;left:10%;bottom:24%;background:#E7DBC4;border-radius:10px 10px 4px 4px"></div>
+          <div style="width:11%;height:20%;right:10%;bottom:24%;background:#E7DBC4;border-radius:10px 10px 4px 4px"></div>
+          <div style="width:9%;height:15%;left:34%;bottom:16%;background:var(--rattan);border-radius:7px 7px 3px 3px"></div>
+          <div style="width:9%;height:15%;left:56%;bottom:16%;background:var(--rattan);border-radius:7px 7px 3px 3px"></div>
+          <!-- pampas -->
+          <svg class="plant-svg" style="width:16%;height:20%;left:42%;bottom:40%" viewBox="0 0 60 70" aria-hidden="true">
+            <g stroke="#cbb68c" stroke-width="3" fill="none" stroke-linecap="round">
+              <path d="M30 70 C24 45 18 34 12 20"/><path d="M30 70 C30 45 30 32 30 14"/><path d="M30 70 C36 45 42 34 48 20"/></g></svg>
+          <!-- striped flatweave -->
+          <div class="rug" style="width:74%;height:12%;left:13%;bottom:3%;background:repeating-linear-gradient(90deg,#cbb68c 0 20px,#b26a47 20px 24px,#6e6f4e 24px 27px)"></div>
+          <div class="cap">Concept · Dining &amp; fireplace</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 05</span><span class="dim">10'5" × 16'3" · 165 sq ft · wood fireplace</span></div>
+        <h3>Gather around the fire</h3>
+        <p class="concept">The largest room on the floor and the only one with a fireplace — make that the anchor.
+          Limewash the surround, set a generous oak table beneath one big woven pendant, and mix the seating so it never feels formal.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Dark formal dining suite and matching china cabinet</li>
+              <li>Brass-and-crystal chandelier; dated tile/brick fireplace face</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in</h5>
+            <ul><li><b>Solid oak plank table</b> with <b>mixed seating</b> — upholstered linen end chairs + cane sides</li>
+              <li><b>Oversized rattan / plaster pendant</b> centred on the table</li>
+              <li><b>Limewashed fireplace</b> + simple oak mantel: lean arched mirror, two ceramic vessels, taper candles</li>
+              <li>Low oak sideboard, striped wool flatweave, olive drapery, pampas</li></ul></div>
+          <p class="note">Big room, one material story: oak + plaster + rattan, repeated, keeps 165 sq ft feeling collected rather than sparse.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== POWDER ===================== -->
+<section id="powder">
+  <div class="wrap">
+    <div class="room flip reveal">
+      <div class="render">
+        <div class="scene">
+          <div class="wall" style="--scene-wall:#B26A47;--scene-wall-2:#9E5A3C"></div>
+          <div class="floor" style="--scene-floor:#cdb88d"></div>
+          <!-- arched rattan mirror -->
+          <div class="arch-top" style="width:24%;height:38%;left:38%;top:10%;background:linear-gradient(160deg,#d7e5e8,#eef2f0);border:6px solid var(--rattan)"></div>
+          <!-- floating oak vanity -->
+          <div style="width:44%;height:12%;left:28%;bottom:34%;background:var(--oak);border-radius:5px"></div>
+          <!-- vessel sink -->
+          <div style="width:12%;height:6%;left:44%;bottom:46%;background:#efe7d9;border-radius:50% 50% 40% 40%"></div>
+          <!-- brass faucet -->
+          <div style="width:1.6%;height:9%;left:49%;bottom:52%;background:#b08d57;border-radius:2px"></div>
+          <!-- woven sconce -->
+          <div style="width:6%;height:6%;left:66%;top:16%;background:var(--rattan);border-radius:50%"></div>
+          <div style="width:6%;height:6%;left:28%;top:16%;background:var(--rattan);border-radius:50%"></div>
+          <!-- terracotta towel -->
+          <div style="width:5%;height:16%;left:31%;bottom:34%;background:#b8613c;border-radius:3px"></div>
+          <!-- trailing plant -->
+          <svg class="plant-svg" style="width:14%;height:24%;right:10%;bottom:44%" viewBox="0 0 50 80" aria-hidden="true">
+            <g stroke="#8c8d5f" stroke-width="3" fill="none" stroke-linecap="round">
+              <path d="M25 0 C15 22 34 32 20 55"/><path d="M25 0 C35 20 18 36 32 58"/></g>
+            <g fill="#9aa066"><circle cx="17" cy="30" r="4"/><circle cx="33" cy="34" r="4"/><circle cx="22" cy="54" r="4"/></g></svg>
+          <!-- small bath mat -->
+          <div class="rug" style="width:26%;height:7%;left:37%;bottom:8%;background:repeating-linear-gradient(90deg,#cbb68c 0 8px,#9e5a3c 8px 12px)"></div>
+          <div class="cap">Concept · Powder room</div>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="rlabel"><span class="no">ROOM 06</span><span class="dim">4'11" × 4'4" · 21 sq ft · 2-piece</span></div>
+        <h3>The jewel-box moment</h3>
+        <p class="concept">The smallest room is the safest place to be bold. With barely any square footage,
+          a deep clay wall is a low-commitment, high-impact gesture — pure boho drama in a closet-sized space.</p>
+        <div class="plan">
+          <div class="pl"><h5><span class="dot" style="background:var(--terra)"></span>Retire</h5>
+            <ul><li>Builder vanity, chrome faucet and frameless flat mirror</li>
+              <li>Cool-white paint and bright overhead light</li></ul></div>
+          <div class="pl"><h5><span class="dot" style="background:var(--oak)"></span>Bring in</h5>
+            <ul><li><b>Clay / terracotta limewash wall</b> (or venetian plaster) for depth</li>
+              <li><b>Small floating oak vanity</b> or console with a stoneware <b>vessel sink</b></li>
+              <li><b>Unlacquered-brass faucet</b>, <b>arched rattan mirror</b>, woven sconces on a warm bulb</li>
+              <li>Terracotta hand towels, handmade soap dish, one trailing plant</li></ul></div>
+          <p class="note">21 sq ft: one wallet-friendly wall finish changes the whole feel — spend here, save elsewhere.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap foot-grid">
+    <div class="reveal">
+      <p class="eyebrow">Next</p>
+      <h2 class="serif">From board to rooms</h2>
+      <p>This is a direction, not a purchase order — a shared language for the finishes, palette
+        and pieces so the whole main floor pulls together. Swap any single piece; the rules
+        (three textures, light &amp; leggy, one clay moment) keep it coherent.</p>
+      <ol class="steps">
+        <li data-n="1">Confirm what stays — flooring, cabinet boxes, the fireplace — before buying.</li>
+        <li data-n="2">Lock the palette with real samples: oak, limewash, a clay paint, one brass.</li>
+        <li data-n="3">Start with the anchor pieces (family sofa, dining table) and layer textiles last.</li>
+        <li data-n="4">Send me photos of each room and I'll tune this board to your exact walls &amp; light.</li>
+      </ol>
+    </div>
+    <div class="reveal">
+      <p class="eyebrow">About this board</p>
+      <div class="disclaimer">
+        <p style="margin:0 0 10px">Room names and dimensions are taken from the property's iGUIDE
+          floor plan (350 Saginaw Pkwy, main floor, 911 sq ft interior). Measurements are approximate
+          and should be verified before ordering furniture.</p>
+        <p style="margin:0">The room images here are <b>stylized concept illustrations drawn in code</b> to
+          convey palette, materials and layout — not photographs or photorealistic renders of the actual rooms.
+          Share real photos and I can make the guidance room-specific.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var els=document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion:reduce)').matches){
+      els.forEach(function(e){e.classList.add('in')});return;
+    }
+    var io=new IntersectionObserver(function(en){
+      en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});
+    },{rootMargin:'0px 0px -8% 0px',threshold:.08});
+    els.forEach(function(e){io.observe(e)});
+  })();
+</script>
